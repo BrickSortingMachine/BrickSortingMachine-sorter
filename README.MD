@@ -11,11 +11,11 @@ A machine to automatically sort your LEGO® collection
 This project is heavily inspired by numerous preceding LEGO® sorting machines, I'd like to give credit [in this post](https://medium.com/@bricksortingmachine/lego-sorting-machine-overview-d390645759f9). For background information visit our [blog](https://medium.com/@bricksortingmachine)
 or [YouTube channel](https://www.youtube.com/@BrickSortingMachine).
 
-[![GitHub Workflow Status]( https://img.shields.io/github/actions/workflow/status/BrickSortingMachine/BrickSortingMachine-sorter/build.yaml?branch=main&label=build%20status&logo=github&logoColor=%23dddddd)](https://github.com/BrickSortingMachine/BrickSortingMachine-sorter/actions)
-[![GitHub release](https://img.shields.io/github/v/release/BrickSortingMachine/BrickSortingMachine-sorter?include_prereleases)](https://github.com/BrickSortingMachine/BrickSortingMachine-sorter/releases)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-black)](https://github.com/psf/black)
-[![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1)](https://pycqa.github.io/isort/)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/BrickSortingMachine/BrickSortingMachine-sorter/.github/workflows/UnitTest.yml?branch=main&logo=github)](https://github.com/BrickSortingMachine/BrickSortingMachine-sorter/actions)
+[![GitHub release](https://img.shields.io/github/v/release/BrickSortingMachine/BrickSortingMachine-sorter)](https://github.com/BrickSortingMachine/BrickSortingMachine-sorter/releases)
 [![GitHub](https://img.shields.io/badge/license-GPLv3-blue)](https://github.com/BrickSortingMachine/BrickSortingMachine-sorter/blob/main/LICENSE)
+[![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1)](https://pycqa.github.io/isort/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-black)](https://github.com/psf/black)
 
 ## Getting Started
 

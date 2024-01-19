@@ -1,0 +1,16 @@
+<html>
+<body style="font-family:Verdana, Geneva, Tahoma, sans-serif">
+    
+    
+    <h1>Data</h1>
+    <p>Click on img to copy path to clipboard.</p>
+
+    {% for info in file_list %}
+    <div style="display:inline-block;width:400px; margin-top:80px;">
+        <img src="{{info.img_fp}}" style="cursor: pointer; width:400px;" onclick="navigator.clipboard.writeText('{{info.img_fp|replace('\\','\\\\')}}')" />
+        {{info.image_fn}}
+    </div>
+    {% endfor %}
+    
+</body>
+</html>

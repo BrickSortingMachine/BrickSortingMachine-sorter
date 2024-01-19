@@ -1,0 +1,12 @@
+[flake8]
+# E203 = whitespace before (black)
+# E402 = import not at beginning of file
+# W503 = line break before binary operator (black)
+# E501 = line too long (90 > 88 characters) (black can fail to achieve 88)
+ignore = E203, E402, W503, E501
+# not ignored anymore
+# F401 = imported but unused
+# E266 = too many # at beginning of comment
+# F403 = unable to detect undefined names
+max-line-length = 88
+select = B,C,E,F,W,T4,B9

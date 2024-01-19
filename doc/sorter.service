@@ -1,0 +1,14 @@
+[Unit]
+Description=Sorter
+After=multi-user.target
+
+[Service]
+Type=idle
+ExecStart=/bin/bash -ce '/usr/bin/python3 /home/ADD_USERNAME_HERE/sorter/sorter.py controller > /home/ADD_USERNAME_HERE/sorter.log 2>&1'
+StandardOutput=file:/home/ADD_USERNAME_HERE/sorter.log
+StandardError=file:/home/ADD_USERNAME_HERE/sorter_error.log
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target

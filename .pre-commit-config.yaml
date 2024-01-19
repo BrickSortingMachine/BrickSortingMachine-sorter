@@ -1,0 +1,16 @@
+repos:
+-   repo: https://github.com/psf/black
+    rev: stable
+    hooks:
+    - id: black
+      language_version: python3.11
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v1.2.3
+    hooks:
+    - id: flake8
+# conda version of isort (std uses poetry)
+- repo: https://github.com/Quantco/pre-commit-mirrors-isort
+  rev: ''  # Use the sha / tag you want to point at
+  hooks:
+    - id: isort-conda
+      args: ["--profile", "black"]

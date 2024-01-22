@@ -16,6 +16,7 @@ or [YouTube channel](https://www.youtube.com/@BrickSortingMachine).
 [![GitHub](https://img.shields.io/badge/license-GPLv3-blue)](https://github.com/BrickSortingMachine/BrickSortingMachine-sorter/blob/main/LICENSE)
 [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1)](https://pycqa.github.io/isort/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-black)](https://github.com/psf/black)
+[![DeepSource](https://static.deepsource.io/deepsource-badge-light-mini.svg)](https://deepsource.io/gh/BrickSortingMachine/BrickSortingMachine-sorter/?ref=repository-badge)
 
 ## Getting Started
 

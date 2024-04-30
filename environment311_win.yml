@@ -1,0 +1,26 @@
+name: sorter311
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - pip
+  - numpy
+  - opencv
+  - py-opencv
+  - pip:
+    - keyboard
+    - matplotlib
+    - scipy
+    - tensorflow
+    - jinja2
+    - tqdm
+    - scikeras
+    - windows-capture-device-list
+    - pywin32
+    - readchar
+    - pre-commit
+    - mypy
+    - isort
+    - serial
+    - flake8

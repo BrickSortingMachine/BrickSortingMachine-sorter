@@ -1,0 +1,17 @@
+key_esc = 1
+key_a = 30
+key_d = 32
+key_z = 44
+key_s = 31
+key_x = 45
+key_c = 46
+key_space = 57
+key_1 = 2
+key_2 = 3
+key_3 = 4
+key_4 = 5
+key_ESC = 1
+key_F1 = 59
+key_Tab = 15
+key_left = 75
+key_right = 77

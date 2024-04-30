@@ -1,0 +1,30 @@
+<html>
+<head>
+    <style>
+        html {
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+            font-size:10px;
+        }
+    </style>
+</head>
+<body>
+    
+<h1>{{report_title}}</h1>
+Model: {{classifier_model}}
+{% for label_class, ev_list in ev_by_label.items() %}
+    <h3>Label: {{label_class}}</h3>
+    {% for ev in ev_list %}
+        <div style="display:inline-block;width:200px;margin:5px">
+            {% if ev.prediction_correct == False %}
+                <img src="file://{{ev.fp}}" style="width:200px;border:4px solid red;"/>
+            {% else %}
+                <img src="file://{{ev.fp}}" style="width:200px;border:4px solid green;"/>
+            {% endif %}
+            High: {{ev.predicted_class_high}}<br />
+            Low: {{ev.predicted_class}}
+        </div>
+    {% endfor %}
+{% endfor %}
+
+</body>
+</html>

@@ -1,0 +1,14 @@
+name: sorter311
+channels:
+  - defaults
+dependencies:
+  - python=3.11
+  - pip
+  - flake8
+  - pip:
+    - numpy
+    - opencv-python
+    - matplotlib
+    - pillow
+    - tqdm
+    - pySerial

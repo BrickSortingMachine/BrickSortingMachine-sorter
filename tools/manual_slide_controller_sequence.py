@@ -8,9 +8,9 @@ import traceback
 p = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(p)
 
-import sorter.serial_service.serial_connection_manager
+import sorter.argument_parser
+import sorter.serial_connection.manager
 import sorter.serial_service.slide_serial_connection_handler
-import sorter.util.argument_parser
 
 logging.basicConfig(
     format="%(levelname)s %(asctime)s %(filename)s:%(lineno)d %(message)s",
@@ -18,7 +18,7 @@ logging.basicConfig(
     level=logging.DEBUG,
 )
 
-parser = sorter.util.argument_parser.ArgumentParser(description="Manual Commands")
+parser = sorter.argument_parser.ArgumentParser(description="Manual Commands")
 parser.add_argument("--test_mode", action="store_true", required=False)
 args = parser.parse_args()
 
@@ -38,10 +38,10 @@ slide = (
     sorter.serial_service.slide_serial_connection_handler.SlideSerialConnectionHandler()
 )
 if not args.test_mode:
-    manager = sorter.serial_service.serial_connection_manager.SerialConnectionManager()
+    manager = sorter.serial_connection.manager.SerialConnectionManager()
     manager.register_handler("slide-controller", slide)
 else:
-    # mock connection manager (not ahve physical serial connection)
+    # mock connection manager (not have physical serial connection)
     slide.connection = DummyConnection(slide)
 
 motion_completed = True
@@ -78,41 +78,58 @@ while not slide.is_connected():
 logging.info("Connected.")
 
 rot_dict = {
+    10: 168,
+    9: 152,
+    8: 136,
+    7: 123,
+    6: 107,
     0: 90,
-    1: 72,
-    2: 56,
-    3: 40,
-    4: 24,
-    5: 9,
-    7: 173,
-    8: 157,
-    9: 141,
-    10: 126,
-    11: 110,
+    1: 74,
+    2: 58,
+    3: 46,
+    4: 32,
+    5: 16,
 }
 el_dict = {
-    "low": 90,
+    "low": 100,
     "high": 170,
 }
 
 try:
     # move through pose list
     pose_list = [
-        (9, False),
         (0, False),
-        (0, True),
+        (4, True),
+        (1, False),
         (2, True),
+        (8, True),
+        (6, True),
         (2, False),
+        (9, True),
+        (10, True),
+        (3, False),
+        (5, True),
+        (10, False),
+        (0, True),
+        (7, True),
+        (3, True),
+        (4, False),
+        (5, False),
         (9, False),
+        (1, True),
+        (6, False),
+        (7, False),
+        (8, False),
     ]
-    for pose_index, pose in enumerate(pose_list):
-        rot_index, low = pose
-        rot = rot_dict[rot_index]
-        el = el_dict["low" if low else "high"]
-        logging.info(" ")
-        logging.info(f"Requesting pose {pose_index} (rot={rot}, el={el}) ...")
-        move_and_wait(rot, el)
-except Exception:
+    while True:
+        for pose_index, pose in enumerate(pose_list):
+            rot_index, low = pose
+            rot = rot_dict[rot_index]
+            el = el_dict["low" if low else "high"]
+            logging.info(" ")
+            logging.info(f"Requesting pose {pose_index} (rot={rot}, el={el}) ...")
+            move_and_wait(rot, el)
+except KeyboardInterrupt:
     trace = traceback.format_exc()
     logging.exception(trace)
 

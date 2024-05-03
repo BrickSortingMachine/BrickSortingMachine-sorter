@@ -250,8 +250,8 @@ class CameraCapture:
 
         return camera_index
 
-    def parse_v4l2_ctl_output(self, device_list):
-        device_list = [s.strip() for s in device_list]
+    def parse_v4l2_ctl_output(self, v4l2_output_list):
+        v4l2_output_list = [s.strip() for s in v4l2_output_list]
         """
             'HD USB Camera (usb-0000:00:14.0-1):'
             '/dev/video0'
@@ -267,7 +267,7 @@ class CameraCapture:
         """
 
         # add at least 1 empty line at end
-        device_list.append("")
+        v4l2_output_list.append("")
 
         in_device = False
         new_device_name = None
@@ -276,7 +276,7 @@ class CameraCapture:
         device_list = []
 
         s: str
-        for s in device_list:
+        for s in v4l2_output_list:
             if not in_device:
                 if s.startswith("/"):
                     in_device = True

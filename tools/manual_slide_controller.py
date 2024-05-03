@@ -9,9 +9,9 @@ import readchar
 p = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(p)
 
-import sorter.serial_service.serial_connection_manager
+import sorter.argument_parser
+import sorter.serial_connection.manager
 import sorter.serial_service.slide_serial_connection_handler
-import sorter.util.argument_parser
 
 logging.basicConfig(
     format="%(levelname)s %(asctime)s %(filename)s:%(lineno)d %(message)s",
@@ -19,10 +19,10 @@ logging.basicConfig(
     level=logging.DEBUG,
 )
 
-parser = sorter.util.argument_parser.ArgumentParser(description="Manual Commands")
+parser = sorter.argument_parser.ArgumentParser(description="Manual Commands")
 args = parser.parse_args()
 
-manager = sorter.serial_service.serial_connection_manager.SerialConnectionManager()
+manager = sorter.serial_connection.manager.SerialConnectionManager()
 slide = (
     sorter.serial_service.slide_serial_connection_handler.SlideSerialConnectionHandler()
 )
@@ -89,7 +89,7 @@ logging.info("Connected.")
 while True:
     # help
     print(" ")
-    print(f"Current slide position: {current_position}deg")
+    print(f"Current slide position: {current_position}deg {current_elevation}deg")
     print(" ")
     print("Control Slide")
     print(" ")

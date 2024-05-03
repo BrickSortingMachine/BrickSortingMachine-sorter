@@ -27,6 +27,10 @@ With prerequisites [Python 3.11](https://www.python.org) and [Conda](https://doc
 ./update_environment.sh     # Linux
 update_environment_win.bat  # Windows
 ```
+Adapt local config (currently no adaptions needed):
+```
+cp config.json.example config.json
+```
 
 ## Usage
 Machine controller (on raspberry pi, connected to motor drivers):

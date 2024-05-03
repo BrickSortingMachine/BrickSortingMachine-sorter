@@ -43,6 +43,7 @@ if not c.get_connected():
 
 
 def send_classification_result(object_class: str):
+    logging.info(f"Sending class: {object_class}")
     low_list = [
         {"class": object_class, "probability": 1},
         {"class": "other1", "probability": 0},
@@ -75,7 +76,7 @@ while True:
     print("   [1]   brick1x           [8]  car")
     print("   [2]   brick2x           [9]  small")
     print("   [3]   brick_modified    [s]  slope1x")
-    print("   [4]   plate1x")
+    print("   [4]   plate1x           [r]  round")
     print("   [5]   plate2x")
     print("   [6]   plate_modified")
     print(" ")
@@ -106,6 +107,8 @@ while True:
         send_classification_result("small")
     if k == "s":
         send_classification_result("slope1x")
+    if k == "r":
+        send_classification_result("round")
     if k == readchar.key.DOWN:
         # do stuff
         print("down")

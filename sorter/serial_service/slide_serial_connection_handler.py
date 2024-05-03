@@ -3,34 +3,47 @@ import logging
 import sorter.serial_service.serial_connection_handler
 import sorter.serial_service.timeout_async
 
-rot_dict = {
+r = {
+    10: 168,
+    9: 152,
+    8: 136,
+    7: 123,
+    6: 107,
     0: 90,
-    1: 72,
-    2: 56,
-    3: 40,
-    4: 24,
-    5: 9,
-    7: 173,
-    8: 157,
-    9: 141,
-    10: 126,
-    11: 110,
+    1: 74,
+    2: 58,
+    3: 46,
+    4: 32,
+    5: 16,
 }
-el = 0
+e = {
+    "low": 100,
+    "high": 170,
+}
 
 class_pose_map = {
-    "slope1x": {"rot": rot_dict[7], "el": el},
-    "slope": {"rot": rot_dict[7], "el": el},
-    "car": {"rot": rot_dict[8], "el": el},
-    "brick_modified": {"rot": rot_dict[9], "el": el},
-    "brick1x": {"rot": rot_dict[10], "el": el},
-    "brick2x": {"rot": rot_dict[11], "el": el},
-    "skip": {"rot": rot_dict[0], "el": el},
-    "plate1x": {"rot": rot_dict[1], "el": el},
-    "plate2x": {"rot": rot_dict[2], "el": el},
-    "plate_modified": {"rot": rot_dict[3], "el": el},
-    "tile": {"rot": rot_dict[4], "el": el},
-    "small": {"rot": rot_dict[5], "el": el},
+    "skip": {"rot": r[0], "el": e["low"]},
+    "multiple_parts": {"rot": r[0], "el": e["low"]},
+    "bar": {"rot": r[1], "el": e["low"]},
+    "brick1x": {"rot": r[2], "el": e["low"]},
+    "brick2x": {"rot": r[3], "el": e["low"]},
+    "brick_modified": {"rot": r[4], "el": e["low"]},
+    "car": {"rot": r[5], "el": e["low"]},
+    "hinge": {"rot": r[6], "el": e["low"]},
+    "human": {"rot": r[7], "el": e["low"]},
+    "plane": {"rot": r[8], "el": e["low"]},
+    "plate": {"rot": r[9], "el": e["low"]},
+    "plate1x": {"rot": r[10], "el": e["low"]},
+    "plate2x": {"rot": r[0], "el": e["high"]},
+    "plate_modified": {"rot": r[1], "el": e["high"]},
+    "plate_shaped": {"rot": r[2], "el": e["high"]},
+    "round": {"rot": r[3], "el": e["high"]},
+    "round_slope": {"rot": r[4], "el": e["high"]},
+    "slope": {"rot": r[5], "el": e["high"]},
+    "slope1x": {"rot": r[6], "el": e["high"]},
+    "small": {"rot": r[7], "el": e["high"]},
+    "tile": {"rot": r[8], "el": e["high"]},
+    "window": {"rot": r[9], "el": e["high"]},
 }
 
 

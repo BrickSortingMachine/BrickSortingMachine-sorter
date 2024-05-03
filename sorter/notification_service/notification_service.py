@@ -66,7 +66,7 @@ class NotificationService:
         self.theme = theme
 
         # pushover credentials
-        credentials_fp = pathlib.Path(__file__).parents[1] / "pushover_credentials.json"
+        credentials_fp = pathlib.Path(__file__).parents[2] / "pushover_credentials.json"
         if not credentials_fp.is_file() and not disable_pushover:
             raise Exception(
                 'Pushover credetials missing. Copy "pushover_credetials.json.example" to "pushover_credentials.json" and adapt its contents'

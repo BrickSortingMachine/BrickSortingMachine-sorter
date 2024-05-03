@@ -26,3 +26,4 @@ dependencies:
     - pre-commit
     - black
     - isort
+    - pre-commit

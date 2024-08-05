@@ -124,7 +124,6 @@ class NotificationService:
             self.pushover(msg)
 
         elif notification_type == "soft_estop":
-            pass
             # stopped
             if notification_msg == "True":
                 msg = "Soft E-Stop triggered"
@@ -149,6 +148,7 @@ class NotificationService:
             logging.warning("Pushover disabled - no credentials")
             return
 
+        logging.info(f"Sending pushover message: {msg}")
         conn = http.client.HTTPSConnection("api.pushover.net:443")
         conn.request(
             "POST",

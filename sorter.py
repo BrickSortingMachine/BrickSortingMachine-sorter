@@ -1,5 +1,6 @@
 import logging
 import os
+import pathlib
 import sys
 import time
 
@@ -77,7 +78,7 @@ def run_classification(args, sub_parser):
     import sorter.classification_service.classification_service
 
     c = sorter.classification_service.classification_service.ClassificationService(
-        args.host, model_fp=args.model, enable_cnn=not args.disable_cnn
+        args.host, model_fp=pathlib.Path(args.model), enable_cnn=not args.disable_cnn
     )
 
     time.sleep(0.5)

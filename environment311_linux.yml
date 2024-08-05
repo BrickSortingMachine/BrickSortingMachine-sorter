@@ -27,3 +27,4 @@ dependencies:
     - black
     - isort
     - pre-commit
+    - tensorflow==2.17

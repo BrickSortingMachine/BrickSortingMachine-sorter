@@ -17,6 +17,9 @@ top_level.txt
 /test/data/*
 !/test/data/placeholder.txt
 
+# models
+/models/*
+
 # config
 config.json
 credentials.json

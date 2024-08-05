@@ -53,6 +53,8 @@ class ClassificationService:
         if self.enable_cnn:
             import sorter.classification_service.classifier
 
+            assert isinstance(model_fp, pathlib.Path)
+
             self.classifier = sorter.classification_service.classifier.Classifier(
                 model_fp
             )

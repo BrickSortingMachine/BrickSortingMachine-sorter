@@ -13,19 +13,21 @@ import sorter.util.file_hash
 
 class Classifier:
     def __init__(self, model_fp):
-        # From good example:
-        # https://www.tensorflow.org/tutorials/keras/classification
         # softmax convert logits to probabilities
         # https://developers.google.com/machine-learning/glossary#logits
-        # model_fp = 'models\\6types.h5'
+
+        # only .keras tested currently
+        assert model_fp.suffix == ".keras"
+
         logging.info(f"Loading model {model_fp} ...")
         model = tf.keras.models.load_model(model_fp, compile=False)
 
         # add softmax layer -> output probabilities
-        output = tf.keras.layers.Activation("softmax")(model.output)
-        self.probability_model = tf.keras.models.Model(
-            inputs=model.inputs, outputs=output
-        )
+        inputs = model.input
+        outputs = tf.keras.layers.Softmax()(
+            model.output[0]
+        )  # Access the tensor directly
+        self.probability_model = tf.keras.Model(inputs=inputs, outputs=outputs)
 
         # json
         json_fp = str(pathlib.Path(model_fp).with_suffix(".json"))
@@ -86,7 +88,7 @@ class Classifier:
         batch_high = tf.expand_dims(image_array_high, 0)
 
         # predict
-        probability = self.probability_model.predict([batch_low, batch_high], verbose=0)
+        probability = self.probability_model.predict((batch_low, batch_high), verbose=0)
 
         # class, prob, uniqueness
         # predicted_class = np.argmax(probability,1)

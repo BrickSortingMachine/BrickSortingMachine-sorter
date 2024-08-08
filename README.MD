@@ -4,7 +4,7 @@
 
 A machine to automatically sort your LEGO® collection
 
-<img src="doc/Logo.jpeg" width="100" />
+<img src="https://github.com/BrickSortingMachine/BrickSortingMachine-sorter/releases/download/v1.1.0/Overview.jpg" width="600" />
 
 </div>
 

@@ -1,7 +1,8 @@
 = CNC-Shieldv3 / GRBLv1.1
 
 == Info
-* Re-Plug arduino USB multiple times until dmesg shows ttyUSB to be connected successfully
+* Uninstall brltty package because it interfers with Arduinos UART USB interface
+  sudo apt remove brltty
 * Connect Enable-Pin to ground
 * Left most cable is top at board
 * Universal G-Code sender configuration
@@ -22,7 +23,7 @@
     $110=1000  # works with 20V
     $111=1000
 * Relative Motion Command
-    G21G91X1Y1
+    G21G91X1Y0
 
 $100 = 200.000    (X-axis travel resolution, step/mm)
 $101 = 200.000    (Y-axis travel resolution, step/mm)

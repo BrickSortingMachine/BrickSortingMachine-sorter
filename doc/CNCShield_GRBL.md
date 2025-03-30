@@ -26,8 +26,12 @@
         $120=1000
         $121=1000
     * Velocity
-        $110=150000  # works with 20V
-        $111=150000
+        * axis-aligned motions
+            $110=150000  # works with 20V
+            $111=150000
+        * diagonal motions
+            $110=50000
+            $111=50000
 * Relative Motion Command
     G21G91X1Y0
 
@@ -92,8 +96,8 @@ $32 = 0    (Laser-mode enable, boolean)
 $100 = 5.010    (X-axis travel resolution, step/mm)
 $101 = 5.010    (Y-axis travel resolution, step/mm)
 $102 = 5.010    (Z-axis travel resolution, step/mm)
-$110 = 150000.000    (X-axis maximum rate, mm/min)
-$111 = 150000.000    (Y-axis maximum rate, mm/min)
+$110 = 50000.000    (X-axis maximum rate, mm/min)
+$111 = 50000.000    (Y-axis maximum rate, mm/min)
 $112 = 3000.000    (Z-axis maximum rate, mm/min)
 $120 = 1000.000    (X-axis acceleration, mm/sec^2)
 $121 = 1000.000    (Y-axis acceleration, mm/sec^2)

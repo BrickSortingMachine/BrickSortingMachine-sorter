@@ -1,6 +1,6 @@
-= CNC-Shieldv3 / GRBLv1.1
+# CNC-Shieldv3 / GRBLv1.1
 
-== Info
+## Info
 * Uninstall brltty package because it interfers with Arduinos UART USB interface
   sudo apt remove brltty
 * Connect Enable-Pin to ground
@@ -10,10 +10,10 @@
     * Port ttyUSB0
     * Baud: 115200
 
-== Power Supply
-* 12V
+## Power Supply
+* 20V
 
-== Parameters
+## Parameters
 * Before Calibration
     * Acceleration
         $120=15.000
@@ -36,14 +36,29 @@
     G21G91X1Y0
 
 
+## Example G-Code Program
+G21 ; millimeters
+G90 ; absolute coordinate
+G92 X0 Y0 Z0 ; set origin
+G17 ; XY plane
 
-== G-Code Commands
-* G21  Set to millimeters
-* G92X0Y0  Set current position to be called 0/0
-* G90 G1 X0Y0 F100  Absolute mode move to 0/0
-* G91X1Y1           Incremental move by 1/1
+; Go to zero location
+G0 X0 Y0
 
-== How to compile GRBL from source
+; Create rectangle
+;G1 X0  Y0 F99999
+G0 X0  Y0
+G0 X900  Y400
+G0 X900  Y0
+G0 X0  Y400
+G0 X0 Y0
+
+
+## Z-Axis Motion
+G1 Z0 F50000
+
+
+## How to compile GRBL from source
 * Base Version
     * Connect arduino multiple times until dmesg says connected to /dev/ttyUSB0
     * Set board mode to Arduino UNO
@@ -78,7 +93,7 @@
 - Solutionw as setting the jumper for microstepping and then increasing configured motor max velocity
 
 
-== Backup Values:
+## Backup Values:
 >>> $$
 $0 = 10    (Step pulse time, microseconds)
 $1 = 100    (Step idle delay, milliseconds)

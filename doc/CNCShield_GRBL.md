@@ -69,7 +69,16 @@
     * Find HOMING_FORCE_SET_ORIGIN Uncomment to enable
     * Compile & Upload to Arduino
 
-Backup Values:
+## Debugging Stuttering Stepper Motor
+- Chaning any polarity in a wire pair or swappign the wire pairs **only changes direction**
+- Changing wires between pairs stops the motors / could cause damage
+- The length of the wire did not matter
+- Z-axis motor had facor 10 less max speed
+- Increasing the speed alone would have made it too fast for z-axis
+- Solutionw as setting the jumper for microstepping and then increasing configured motor max velocity
+
+
+== Backup Values:
 >>> $$
 $0 = 10    (Step pulse time, microseconds)
 $1 = 100    (Step idle delay, milliseconds)
@@ -98,11 +107,11 @@ $101 = 5.010    (Y-axis travel resolution, step/mm)
 $102 = 5.010    (Z-axis travel resolution, step/mm)
 $110 = 50000.000    (X-axis maximum rate, mm/min)
 $111 = 50000.000    (Y-axis maximum rate, mm/min)
-$112 = 3000.000    (Z-axis maximum rate, mm/min)
+$112 = 50000.000    (Z-axis maximum rate, mm/min)
 $120 = 1000.000    (X-axis acceleration, mm/sec^2)
 $121 = 1000.000    (Y-axis acceleration, mm/sec^2)
-$122 = 500.000    (Z-axis acceleration, mm/sec^2)
+$122 = 100.000    (Z-axis acceleration, mm/sec^2)
 $130 = 1000.000    (X-axis maximum travel, millimeters)
 $131 = 450.000    (Y-axis maximum travel, millimeters)
-$132 = 105.000    (Z-axis maximum travel, millimeters)
+$132 = 1000.000    (Z-axis maximum travel, millimeters)
 ok

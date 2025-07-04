@@ -1,6 +1,7 @@
-# ide
+# python/ide
 .vscode
 __pycache__
+venv*
 
 # codespaces
 build/*

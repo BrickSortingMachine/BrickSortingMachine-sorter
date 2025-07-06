@@ -16,3 +16,4 @@ isort
 serial
 flake8
 pre-commit
+serial

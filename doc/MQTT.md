@@ -1,5 +1,10 @@
 # Brick Sorting Machine - MQTT Topic Hierarchy
 
+## Pre-Requisite
+- Install [mosquitto mqtt server](https://mosquitto.org/)
+- do `not install it as a service` - since unit tests frequently start and stop for clean environment
+- Ensure mosquitto installation dir (e.g. `C:\Program Files\mosquitto`) is added to the PATH
+
 This document outlines the proposed MQTT topic hierarchy for the Brick Sorting Machine project. A well-defined topic structure is crucial for maintainable and scalable communication between the distributed services of the machine.
 
 **Root Namespace:** `brick_sorting_machine/`

@@ -51,7 +51,6 @@ Notification service (on alternative PC):
 python sorter.py notification --host=RASPBERRY_PI_IP_ADDRESS
 ```
 
-
 ## Development
 Install git pre-commit hooks for `flake8`, `black` and `isort` usage:
 ```

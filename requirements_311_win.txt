@@ -17,3 +17,4 @@ serial
 flake8
 pre-commit
 serial
+paho-mqtt

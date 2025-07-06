@@ -31,6 +31,7 @@ Adapt local config (currently no adaptions needed):
 ```
 cp config.json.example config.json
 ```
+The network communication layer is currently ported to mqtt replacing the previous text based socket communication. As a prerequisite the [mosquitto mqtt broker](https://mosquitto.org/) is needed to be installed. Please **do not install it as a service** since unit tests rely on frequently starting and stopping mosquitto for a clean test environment. Ensure mosquitto installation dir (e.g. `C:\Program Files\mosquitto`) is added to the PATH.
 
 ## Usage
 Machine controller (on raspberry pi, connected to motor drivers):

@@ -30,7 +30,9 @@ class MqttTestCase(unittest.TestCase):
         command = ["mosquitto", "-p", str(self.broker_port)]
 
         # Start the broker process
-        self.broker_process = subprocess.Popen(command)
+        self.broker_process = subprocess.Popen(
+            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+        )
 
         # Wait for the broker to be ready to accept connections
         max_wait_time = 5  # seconds
@@ -41,9 +43,21 @@ class MqttTestCase(unittest.TestCase):
             if time.time() - start_time > max_wait_time:
                 # Clean up the process before raising the error
                 self.broker_process.terminate()
-                self.broker_process.wait()
-                raise TimeoutError("Timed out waiting for Mosquitto broker to start.")
+                stdout, stderr = self.broker_process.communicate()
+                raise TimeoutError(
+                    "Timed out waiting for Mosquitto broker to start."
+                    f"\nStdout: {stdout}\nStderr: {stderr}"
+                )
             time.sleep(0.05)
+
+        # mosquitte sends "Error:" msg in case e.g. port is already bound
+        time.sleep(0.5)
+        stdout, stderr = self.broker_process.communicate()
+        if "Error" in stdout or "Error" in stderr:
+            raise RuntimeError(
+                f"Mosquitto broker failed with error.\nStdout: {stdout}\nStderr: {stderr}"
+            )
+
         print("Mosquitto broker started successfully.")
 
     def tearDown(self):

@@ -12,3 +12,4 @@ dependencies:
     - pillow
     - tqdm
     - pySerial
+    - paho-mqtt

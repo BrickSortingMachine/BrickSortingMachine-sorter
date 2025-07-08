@@ -34,12 +34,14 @@ class MqttTestCase(unittest.TestCase):
             command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
         )
 
+        print("\na")
         # Wait for the broker to be ready to accept connections
         max_wait_time = 5  # seconds
         start_time = time.time()
         while not is_port_open(self.broker_port):
             if self.broker_process.poll() is not None:
                 raise RuntimeError("Mosquitto broker failed to start.")
+            print("\nb")
             if time.time() - start_time > max_wait_time:
                 # Clean up the process before raising the error
                 self.broker_process.terminate()
@@ -52,6 +54,7 @@ class MqttTestCase(unittest.TestCase):
 
         # mosquitte sends "Error:" msg in case e.g. port is already bound
         time.sleep(0.5)
+        print("\nc")
         stdout, stderr = self.broker_process.communicate()
         if "Error" in stdout or "Error" in stderr:
             raise RuntimeError(

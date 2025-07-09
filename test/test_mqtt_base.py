@@ -38,9 +38,12 @@ class MqttTestCase(unittest.TestCase):
         print("\n(setUp) Starting Mosquitto broker for test...")
         command = ["mosquitto", "-p", str(self.broker_port)]
 
-        self.broker_process = subprocess.Popen(
-            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
-        )
+        try:
+            self.broker_process = subprocess.Popen(
+                command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+            )
+        except FileNotFoundError:
+            raise Exception("Cannot start mosquitto server - potentially not installed")
 
         # --- Threaded Reader Setup ---
         # Lists to hold output captured by the threads

@@ -39,7 +39,7 @@ class DummyCommandHandler(sorter.network.tcp_server.RequestHandler):
             raise Exception("Received unsupported command: " "%s" "" % command)
 
 
-class ClassificationServiceTest(unittest.TestCase, test_helpers.BaseTest):
+class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTest):
     def test_general(self):
         """
         General

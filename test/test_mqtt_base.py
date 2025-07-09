@@ -5,11 +5,7 @@ import unittest
 import threading
 from contextlib import closing
 
-# This helper function runs in a thread to read a stream (stdout/stderr)
-# line by line and append the output to a list.
 
-
-# E302 fix: Added a second blank line above the top-level function.
 def _read_stream(stream, output_list):
     """Reads a stream line-by-line and stores it in output_list."""
     # The `iter(stream.readline, '')` part reads lines until the stream is closed
@@ -64,7 +60,6 @@ class MqttTestCase(unittest.TestCase):
         self.stderr_thread.start()
         # --- End Threading Setup ---
 
-        # E303 fix: Removed one of the extra blank lines before this section.
         # --- Wait for Broker and Check for Errors ---
         max_wait_time = 5  # seconds
         start_time = time.time()
@@ -87,7 +82,7 @@ class MqttTestCase(unittest.TestCase):
 
             # Also check if the process died for some other reason
             if self.broker_process.poll() is not None:
-                break  # E261 fix: Added a second space before the inline comment.
+                break
 
             time.sleep(0.05)
 

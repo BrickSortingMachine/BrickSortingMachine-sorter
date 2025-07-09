@@ -2,8 +2,10 @@ import logging
 import sys
 import time
 import unittest
+import pathlib
 
 import test_helpers
+import test_mqtt_base
 
 import sorter.classification_service.classification_service
 import sorter.network.tcp_server
@@ -57,11 +59,15 @@ class ClassificationServiceTest(unittest.TestCase, test_helpers.BaseTest):
         time.sleep(1)
 
         if sys.platform == "win32":
-            path = b"rec_2023-08-09_21-38-43\\frame_000548.jpg"
+            path = "rec_2023-08-09_21-38-43\\frame_000548.jpg"
         elif sys.platform == "linux":
-            path = b"rec_2023-08-09_21-38-43/frame_000548.jpg"
+            path = "rec_2023-08-09_21-38-43/frame_000548.jpg"
         else:
             assert False
+
+        # assert test data available
+        if not pathlib.Path(path).is_file():
+            raise Exception("Test data is not available - run tools/download_unpack_test_data.py")
 
         for i in range(1):
             s.broadcast(b"CLF 5 " + path)

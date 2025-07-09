@@ -2,7 +2,17 @@ import socket
 import subprocess
 import time
 import unittest
+import threading
 from contextlib import closing
+
+# This helper function runs in a thread to read a stream (stdout/stderr)
+# line by line and append the output to a list.
+def _read_stream(stream, output_list):
+    """Reads a stream line-by-line and stores it in output_list."""
+    # The `iter(stream.readline, '')` part reads lines until the stream is closed
+    for line in iter(stream.readline, ''):
+        output_list.append(line)
+    stream.close()
 
 
 def is_port_open(port):
@@ -15,7 +25,7 @@ def is_port_open(port):
 class MqttTestCase(unittest.TestCase):
     """
     A base test case that starts and stops a Mosquitto MQTT broker
-    for each test.
+    for each test, using threads to monitor for startup errors.
     """
 
     broker_process = None
@@ -24,44 +34,69 @@ class MqttTestCase(unittest.TestCase):
     def setUp(self):
         """
         Called before each test method.
-        Starts the Mosquitto broker subprocess.
+        Starts the Mosquitto broker and background reader threads.
         """
         print("\n(setUp) Starting Mosquitto broker for test...")
         command = ["mosquitto", "-p", str(self.broker_port)]
 
-        # Start the broker process
         self.broker_process = subprocess.Popen(
             command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
         )
 
-        print("\na")
-        # Wait for the broker to be ready to accept connections
+        # --- Threaded Reader Setup ---
+        # Lists to hold output captured by the threads
+        self.stdout_lines = []
+        self.stderr_lines = []
+
+        # Create and start non-blocking reader threads
+        self.stdout_thread = threading.Thread(
+            target=_read_stream, args=(self.broker_process.stdout, self.stdout_lines)
+        )
+        self.stderr_thread = threading.Thread(
+            target=_read_stream, args=(self.broker_process.stderr, self.stderr_lines)
+        )
+        self.stdout_thread.daemon = True
+        self.stderr_thread.daemon = True
+        self.stdout_thread.start()
+        self.stderr_thread.start()
+        # --- End Threading Setup ---
+
+
+        # --- Wait for Broker and Check for Errors ---
         max_wait_time = 5  # seconds
         start_time = time.time()
-        while not is_port_open(self.broker_port):
-            if self.broker_process.poll() is not None:
-                raise RuntimeError("Mosquitto broker failed to start.")
-            print("\nb")
-            if time.time() - start_time > max_wait_time:
-                # Clean up the process before raising the error
-                self.broker_process.terminate()
-                stdout, stderr = self.broker_process.communicate()
-                raise TimeoutError(
-                    "Timed out waiting for Mosquitto broker to start."
-                    f"\nStdout: {stdout}\nStderr: {stderr}"
+        broker_ready = False
+
+        while time.time() - start_time < max_wait_time:
+            # Check for an early error message from the background threads
+            # Mosquitto typically prints errors to stderr.
+            stderr_output = "".join(self.stderr_lines)
+            if "Error" in stderr_output:
+                # If an error is found, no need to wait further.
+                raise RuntimeError(
+                    f"Mosquitto broker failed on startup with error.\nStderr: {stderr_output}"
                 )
+
+            # If no error, check if the broker is ready to accept connections
+            if is_port_open(self.broker_port):
+                print("Mosquitto broker is ready and listening.")
+                broker_ready = True
+                break  # Success! Exit the loop.
+
+            # Also check if the process died for some other reason
+            if self.broker_process.poll() is not None:
+                break # Exit loop, failure will be handled below.
+
             time.sleep(0.05)
 
-        # mosquitte sends "Error:" msg in case e.g. port is already bound
-        time.sleep(0.5)
-        print("\nc")
-        stdout, stderr = self.broker_process.communicate()
-        if "Error" in stdout or "Error" in stderr:
-            raise RuntimeError(
-                f"Mosquitto broker failed with error.\nStdout: {stdout}\nStderr: {stderr}"
+        # After the loop, if the broker isn't ready, it's a timeout.
+        if not broker_ready:
+            stdout = "".join(self.stdout_lines)
+            stderr = "".join(self.stderr_lines)
+            raise TimeoutError(
+                "Timed out waiting for Mosquitto broker to start."
+                f"\nStdout: {stdout}\nStderr: {stderr}"
             )
-
-        print("Mosquitto broker started successfully.")
 
     def tearDown(self):
         """
@@ -71,4 +106,14 @@ class MqttTestCase(unittest.TestCase):
         if self.broker_process:
             print("\n(tearDown) Stopping Mosquitto broker...")
             self.broker_process.terminate()
-            self.broker_process.wait()  # Ensure the process is fully terminated
+            # Wait for the process to terminate to ensure clean shutdown
+            try:
+                self.broker_process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                print("Broker did not terminate gracefully, killing.")
+                self.broker_process.kill()
+
+            # The threads will exit automatically as the pipes close.
+            # You can optionally join them to be sure.
+            self.stdout_thread.join()
+            self.stderr_thread.join()

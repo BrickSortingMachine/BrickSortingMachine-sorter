@@ -50,5 +50,5 @@ jobs:
     - name: Test with unittest
       run: |
         date
-        python -m unittest -v discover -s ./test  -p 'test_*.py' --failfast
+        python -m unittest discover -s ./test  -p 'test_*.py' --failfast -v
         date

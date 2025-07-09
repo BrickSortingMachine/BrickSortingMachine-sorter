@@ -58,19 +58,13 @@ class ClassificationServiceTest(unittest.TestCase, test_helpers.BaseTest):
         )
         time.sleep(1)
 
-        if sys.platform == "win32":
-            path = "rec_2023-08-09_21-38-43\\frame_000548.jpg"
-        elif sys.platform == "linux":
-            path = "rec_2023-08-09_21-38-43/frame_000548.jpg"
-        else:
-            assert False
-
         # assert test data available
-        if not pathlib.Path(path).is_file():
+        path = pathlib.Path("rec_2023-08-09_21-38-43") / "frame_000548.jpg"
+        if not ("data" / path).is_file():
             raise Exception("Test data is not available - run tools/download_unpack_test_data.py")
 
         for i in range(1):
-            s.broadcast(b"CLF 5 " + path)
+            s.broadcast(b"CLF 5 " + bytes(str(path), 'utf-8'))
             time.sleep(
                 1.5
             )  # classification waits 1s artificially before sending result

@@ -16,6 +16,7 @@ class TestMyServiceCommunication(test_mqtt_base.MqttTestCase):
 
         def on_message(client, userdata, msg):
             nonlocal received_message
+            print("MQTT message received")
             received_message = msg.payload.decode()
 
         # Set up a subscriber

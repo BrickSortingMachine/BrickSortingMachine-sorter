@@ -1,5 +1,5 @@
 import test_helpers
-from test_amqtt_broker import AmqttBrokerThread  # Import our new class
+from test_amqtt_broker import AmqttBrokerThread
 
 
 class MqttTestCase(test_helpers.BaseTest):

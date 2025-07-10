@@ -10,7 +10,7 @@ class TestMyServiceCommunication(test_mqtt_base.MqttTestCase):
         A sample test to verify a message can be published and received.
         """
         # This test will automatically have a clean broker running,
-        # thanks to the setUp method in MqttTestCase.
+        # thanks to the setUp method in MqttTestCase
 
         received_message = None
 

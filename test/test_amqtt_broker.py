@@ -1,6 +1,7 @@
 import asyncio
-import threading
 import logging
+import threading
+
 from amqtt.broker import Broker
 
 # Optional: Silence the noisy amqtt logs during tests
@@ -12,14 +13,13 @@ class AmqttBrokerThread(threading.Thread):
     """
     A thread that runs an amqtt Broker instance on a fixed port.
     """
+
     def __init__(self, host="localhost", port=1884):
         super().__init__(daemon=True)
         self.host = host
         self.port = port
         self.config = {
-            "listeners": {
-                "default": {"type": "tcp", "bind": f"{host}:{port}"}
-            },
+            "listeners": {"default": {"type": "tcp", "bind": f"{host}:{port}"}},
             "sys_interval": 0,  # Disable $SYS topics for testing
             "topic-check": {"enabled": False},  # Allow any topic
         }
@@ -42,7 +42,7 @@ class AmqttBrokerThread(threading.Thread):
         # --- Create the broker instance NOW, inside the async method ---
         self.broker = Broker(config=self.config)
         await self.broker.start()
-        
+
         print(f"\n(Broker Thread) AMQTT broker started on {self.host}:{self.port}")
         self.started_event.set()
 

@@ -21,13 +21,13 @@ class TestMyServiceCommunication(test_mqtt_base.MqttTestCase):
         # Set up a subscriber
         subscriber = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
         subscriber.on_message = on_message
-        subscriber.connect("localhost", self.broker_port)
+        subscriber.connect(self.broker_host, self.broker_port)
         subscriber.subscribe("my/test/topic")
         subscriber.loop_start()
 
         # Publish a message
         publisher = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
-        publisher.connect("localhost", self.broker_port)
+        publisher.connect(self.broker_host, self.broker_port)
         publisher.publish("my/test/topic", "hello world")
         publisher.disconnect()
 

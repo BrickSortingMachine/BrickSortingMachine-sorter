@@ -24,16 +24,6 @@ jobs:
         # $CONDA is an environment variable pointing to the root of the miniconda directory
         echo $CONDA/bin >> $GITHUB_PATH
 
-    # Mosquitto MQTT Broker
-    # (is started automatically after apt-get install thus needs to be stopped explicitelly
-    # so that unittests can independently start/stop cleanly)
-    - name: Install Mosquitto MQTT Broker
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y mosquitto mosquitto-clients
-    - name: Stop Background Mosquitto Service
-      run: sudo systemctl stop mosquitto
-
     - name: Download test data
       run: |
         python tools/download_unpack_test_data.py

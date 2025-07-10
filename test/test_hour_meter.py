@@ -1,12 +1,11 @@
 import time
-import unittest
 
 import test_helpers
 
 import sorter.controller.hour_meter
 
 
-class HourMeterTest(unittest.TestCase, test_helpers.BaseTest):
+class HourMeterTest(test_helpers.BaseTest):
     def test_general(self):
         self.setup_logging()
 

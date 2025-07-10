@@ -1,12 +1,11 @@
 import logging
-import unittest
 
 import test_helpers
 
 import sorter.util.time_delta_format
 
 
-class TimeDeltaFormatTest(unittest.TestCase, test_helpers.BaseTest):
+class TimeDeltaFormatTest(test_helpers.BaseTest):
     def test_general(self):
         self.setup_logging()
 

@@ -12,7 +12,7 @@
 # import sorter.vision_service.object_detector
 
 
-# class ObjectDetectorTest(unittest.TestCase, test_helpers.BaseTest):
+# class ObjectDetectorTest(test_helpers.BaseTest):
 #     def deactivated_test_positive_dectection(self):
 #         """
 #         True positive trigger on obj

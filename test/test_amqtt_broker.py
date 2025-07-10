@@ -26,16 +26,32 @@ class AmqttBrokerThread(threading.Thread):
         self.broker = None
         self.loop = None
         self.started_event = threading.Event()
-        self.stop_event = threading.Event()
+        self.stop_event = None  # Will be an asyncio.Event
 
     def run(self):
         """The main entry point for the thread."""
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
 
-        # Run the main async task
-        self.loop.run_until_complete(self.main())
-        self.loop.close()
+        # This event is tied to this specific loop
+        self.stop_event = asyncio.Event()
+
+        try:
+            # Run the main async task
+            self.loop.run_until_complete(self.main())
+        finally:
+            # Final cleanup
+            try:
+                tasks = asyncio.all_tasks(loop=self.loop)
+                for task in tasks:
+                    task.cancel()
+
+                # Gather and wait for all tasks to finish cancelling
+                self.loop.run_until_complete(
+                    asyncio.gather(*tasks, return_exceptions=True)
+                )
+            finally:
+                self.loop.close()
 
     async def main(self):
         """The core async logic for starting and stopping the broker."""
@@ -46,13 +62,16 @@ class AmqttBrokerThread(threading.Thread):
         print(f"\n(Broker Thread) AMQTT broker started on {self.host}:{self.port}")
         self.started_event.set()
 
-        await self.loop.run_in_executor(None, self.stop_event.wait)
-
-        print("\n(Broker Thread) AMQTT broker shutting down.")
-        await self.broker.shutdown()
+        try:
+            await self.stop_event.wait()
+        except asyncio.CancelledError:
+            # This can happen during cleanup, and it's okay.
+            pass
+        finally:
+            print("\n(Broker Thread) AMQTT broker shutting down.")
+            await self.broker.shutdown()
 
     def stop(self):
         """Signals the thread to stop the broker and exit."""
-        if self.is_alive():
-            self.stop_event.set()
-            self.join()
+        if self.loop and self.stop_event:
+            self.loop.call_soon_threadsafe(self.stop_event.set)

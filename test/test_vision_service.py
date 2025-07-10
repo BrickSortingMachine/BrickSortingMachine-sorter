@@ -36,7 +36,7 @@
 #             pass
 
 
-# class VisionServiceTest(unittest.TestCase, test_helpers.BaseTest):
+# class VisionServiceTest(test_helpers.BaseTest):
 #     test_data_folder = os.path.abspath(
 #          os.path.join(os.path.dirname(__file__), "data"))
 

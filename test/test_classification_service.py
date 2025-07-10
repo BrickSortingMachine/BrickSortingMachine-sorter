@@ -76,5 +76,3 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         cs.stop()
         s.stop()
         time.sleep(0.5)
-
-        test_helpers.BaseTest.assert_threads_stopped(self)

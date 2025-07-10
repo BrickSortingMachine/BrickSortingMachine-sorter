@@ -1,7 +1,6 @@
 import logging
 import socket
 import time
-import unittest
 
 test_enabled = socket.gethostname() == "LULD94MW"
 
@@ -12,7 +11,7 @@ if test_enabled:
 import test_helpers
 
 
-class NotificationServiceTest(unittest.TestCase, test_helpers.BaseTest):
+class NotificationServiceTest(test_helpers.BaseTest):
     def test_via_network(self):
         """
         General

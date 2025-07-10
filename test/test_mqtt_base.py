@@ -1,9 +1,8 @@
-import unittest
-
+import test_helpers
 from test_amqtt_broker import AmqttBrokerThread  # Import our new class
 
 
-class MqttTestCase(unittest.TestCase):
+class MqttTestCase(test_helpers.BaseTest):
     """
     A base test case that starts and stops an in-process amqtt broker
     for each test
@@ -16,6 +15,8 @@ class MqttTestCase(unittest.TestCase):
         Called before each test method.
         Starts the amqtt broker in a separate thread on a fixed port.
         """
+        self.setup_logging()
+
         print("\n(setUp) Starting AMQTT broker for test...")
         self.broker_host = "localhost"
         self.broker_port = 1884
@@ -36,7 +37,18 @@ class MqttTestCase(unittest.TestCase):
         Called after each test method.
         Stops the amqtt broker thread.
         """
-        if self.broker_thread:
+        if self.broker_thread and self.broker_thread.is_alive():
             print("\n(tearDown) Stopping AMQTT broker...")
             self.broker_thread.stop()
-            print("(tearDown) Broker stopped.")
+            # Wait for the thread to finish
+            self.broker_thread.join(timeout=5)
+
+            if self.broker_thread.is_alive():
+                print(
+                    "(tearDown) WARNING: Timed out waiting for broker thread to stop."
+                )
+            else:
+                print("(tearDown) Broker stopped and thread joined.")
+        self.broker_thread = None
+
+        self.assert_threads_stopped()

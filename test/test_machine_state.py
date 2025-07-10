@@ -1,5 +1,4 @@
 import datetime
-import unittest
 
 import test_helpers
 
@@ -7,7 +6,7 @@ import sorter.controller.hour_meter
 import sorter.controller.machine_state
 
 
-class MachineStateTest(unittest.TestCase, test_helpers.BaseTest):
+class MachineStateTest(test_helpers.BaseTest):
     def test_vf1_pulse(self):
         self.setup_logging()
         sorter.controller.hour_meter.HourMeter().reset()

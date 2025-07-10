@@ -2,12 +2,10 @@ import logging
 import sys
 import threading
 import traceback
+import unittest
 
 
-class BaseTest:
-    def __init__(self) -> None:
-        logging.info("init called")
-
+class BaseTest(unittest.TestCase):
     def assert_threads_stopped(self):
         logging.info("Checking all threads stopped ...")
         for thread in threading.enumerate():
@@ -22,10 +20,10 @@ class BaseTest:
                 raise Exception(
                     f"Thread with name {thread.name} still running at end of test (will cause subsequent hidden failures since unittest run in same process)."
                 )
-        logging.info("ok")
+        print("All threads stopped ✔")
+        logging.info("All threads stopped ✔")
 
-    @staticmethod
-    def setup_logging():
+    def setup_logging(self):
         """
         Configures the logging module uniformly over the test cases
         """
@@ -37,3 +35,9 @@ class BaseTest:
 
         # switch off matplotlib debug messages for font manager
         logging.getLogger("matplotlib.font_manager").disabled = True
+
+    def setUp(self):
+        self.setup_logging()
+
+    def tearDown(self):
+        self.assert_threads_stopped()

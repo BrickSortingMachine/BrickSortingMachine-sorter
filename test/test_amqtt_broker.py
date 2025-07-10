@@ -4,9 +4,9 @@ import threading
 
 from amqtt.broker import Broker
 
-# Optional: Silence the noisy amqtt logs during tests
-logging.basicConfig(level=logging.WARNING)
-logging.getLogger("amqtt").setLevel(logging.WARNING)
+logging.getLogger("amqtt").disabled = True
+logging.getLogger("amqtt.broker").disabled = True
+logging.getLogger("transitions.core").disabled = True
 
 
 class AmqttBrokerThread(threading.Thread):

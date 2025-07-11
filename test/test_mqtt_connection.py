@@ -22,8 +22,6 @@ class TestMyServiceCommunication(test_mqtt_base.MqttTestCase):
         # Set up a subscriber
         subscriber = mqtt.Client(
             mqtt.CallbackAPIVersion.VERSION2,
-            client_id="test_receiver",
-            clean_session=False,
         )
         subscriber.on_message = on_message
         subscriber.connect(self.broker_host, self.broker_port)
@@ -33,8 +31,6 @@ class TestMyServiceCommunication(test_mqtt_base.MqttTestCase):
         # Publish a message
         publisher = mqtt.Client(
             mqtt.CallbackAPIVersion.VERSION2,
-            client_id="test_sender",
-            clean_session=False,
         )
         publisher.connect(self.broker_host, self.broker_port)
         publisher.loop_start()

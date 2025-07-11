@@ -20,19 +20,29 @@ class TestMyServiceCommunication(test_mqtt_base.MqttTestCase):
             received_message = msg.payload.decode()
 
         # Set up a subscriber
-        subscriber = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+        subscriber = mqtt.Client(
+            mqtt.CallbackAPIVersion.VERSION2,
+            client_id="test_receiver",
+            clean_session=False,
+        )
         subscriber.on_message = on_message
         subscriber.connect(self.broker_host, self.broker_port)
-        subscriber.subscribe("my/test/topic")
         subscriber.loop_start()
+        subscriber.subscribe("my/test/topic")
 
         # Publish a message
-        publisher = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+        publisher = mqtt.Client(
+            mqtt.CallbackAPIVersion.VERSION2,
+            client_id="test_sender",
+            clean_session=False,
+        )
         publisher.connect(self.broker_host, self.broker_port)
-        publisher.publish("my/test/topic", "hello world")
-        publisher.disconnect()
+        publisher.loop_start()
+        publisher.publish("my/test/topic", "hello world", qos=2)
+        time.sleep(2)  # Give time for message to be processed
 
-        time.sleep(0.5)  # Give time for message to be processed
+        publisher.loop_stop()
+        publisher.disconnect()
 
         subscriber.loop_stop()
         subscriber.disconnect()

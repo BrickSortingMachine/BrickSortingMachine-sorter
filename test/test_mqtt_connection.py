@@ -35,7 +35,8 @@ class TestMyServiceCommunication(test_mqtt_base.MqttTestCase):
         publisher.connect(self.broker_host, self.broker_port)
         publisher.loop_start()
         publisher.publish("my/test/topic", "hello world", qos=2)
-        time.sleep(2)  # Give time for message to be processed
+
+        time.sleep(0.5)  # Give time for message to be processed
 
         publisher.loop_stop()
         publisher.disconnect()

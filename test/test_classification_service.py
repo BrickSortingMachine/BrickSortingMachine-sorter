@@ -68,6 +68,7 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
 
         publisher = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
         publisher.connect(self.broker_host, self.broker_port)
+        publisher.loop_start()
 
         for i in range(1):
             # send classification request
@@ -77,7 +78,9 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
                 "image_path": str(path),
             }
             publisher.publish(
-                "bricksortingmachine/classification/request", json.dumps(payload)
+                "bricksortingmachine/classification/request",
+                json.dumps(payload),
+                qos=2,
             )
 
             time.sleep(
@@ -89,6 +92,7 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
 
         # stop network
         time.sleep(1)
+        publisher.loop_stop()
         publisher.disconnect()
         cs.stop()
         s.stop()

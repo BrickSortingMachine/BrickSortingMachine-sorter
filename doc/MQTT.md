@@ -86,7 +86,7 @@ Topics for the classification workflow.
     }
     ```
 * **Retain**: `false`
-* **QoS**: 1
+* **QoS**: 2
 
 #### `bricksortingmachine/classification/result`
 

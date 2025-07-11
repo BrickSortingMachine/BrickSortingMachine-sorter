@@ -28,7 +28,7 @@ class BaseTest(unittest.TestCase):
         Configures the logging module uniformly over the test cases
         """
         logging.basicConfig(
-            format="%(levelname)s %(asctime)s %(filename)s:%(lineno)d %(message)s",
+            format="%(name)s %(levelname)s %(asctime)s %(filename)s:%(lineno)d %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
             level=logging.DEBUG,
         )

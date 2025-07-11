@@ -78,7 +78,10 @@ def run_classification(args, sub_parser):
     import sorter.classification_service.classification_service
 
     c = sorter.classification_service.classification_service.ClassificationService(
-        args.host, model_fp=pathlib.Path(args.model), enable_cnn=not args.disable_cnn
+        args.host,
+        args.port,
+        model_fp=pathlib.Path(args.model),
+        enable_cnn=not args.disable_cnn,
     )
 
     time.sleep(0.5)
@@ -176,6 +179,13 @@ if __name__ == "__main__":
     classification_parser.set_defaults(command="classification")
     classification_parser.add_argument(
         "--host", required=True, help="Hostname of machine server"
+    )
+    classification_parser.add_argument(
+        "--port",
+        required=False,
+        default=1883,
+        type=int,
+        help="Port of MQTT broker",
     )
     classification_parser.add_argument(
         "--model", required=True, help="CNN model to load"

@@ -4,9 +4,11 @@ import threading
 
 from amqtt.broker import Broker
 
-logging.getLogger("amqtt").disabled = True
-logging.getLogger("amqtt.broker").disabled = True
-logging.getLogger("transitions.core").disabled = True
+# reduce amqtt debug logging
+logging.getLogger("amqtt").setLevel(logging.WARNING)
+logging.getLogger("amqtt.broker").setLevel(logging.WARNING)
+logging.getLogger("transitions.core").setLevel(logging.WARNING)
+# logging.getLogger("passlib.utils.compat").setLevel(logging.WARNING)
 
 
 class AmqttBrokerThread(threading.Thread):

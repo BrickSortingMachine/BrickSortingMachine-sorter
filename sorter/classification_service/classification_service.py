@@ -7,6 +7,8 @@ import threading
 import time
 from dataclasses import dataclass
 
+import paho.mqtt.client as mqtt
+
 import sorter.classification_service.classification_result
 import sorter.classification_service.config
 import sorter.network.tcp_client
@@ -47,7 +49,7 @@ class CSTcpClient(sorter.network.tcp_client.TcpClient):
 
 
 class ClassificationService:
-    def __init__(self, host, enable_cnn, model_fp) -> None:
+    def __init__(self, host, port, enable_cnn, model_fp) -> None:
         # classifier
         self.enable_cnn = enable_cnn
         if self.enable_cnn:
@@ -85,7 +87,31 @@ class ClassificationService:
         # notification
         self.notification_client = nc.NotificationClient(self.tcp_client)
 
+        # mqtt
+        self.mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+        self.mqtt_client.on_connect = self.on_mqtt_connect
+        self.mqtt_client.will_set(
+            "bricksortingmachine/classification/status", "offline", 1, True
+        )
+        self.mqtt_client.connect(host, port)
+        self.mqtt_client.loop_start()
+
+    def on_mqtt_connect(self, client, userdata, flags, reason_code, properties):
+        if reason_code.is_failure:
+            logging.error(
+                f"Failed to connect to MQTT broker: {reason_code}. Will retry."
+            )
+        else:
+            # publish online message
+            self.mqtt_client.publish(
+                "bricksortingmachine/classification/status", "online", 1, True
+            )
+
     def stop(self) -> None:
+        # mqtt
+        self.mqtt_client.loop_stop()
+        self.mqtt_client.disconnect()
+
         # network thread
         self.tcp_client.stop()
 

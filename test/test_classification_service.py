@@ -1,7 +1,9 @@
+import json
 import logging
 import pathlib
 import time
 
+import paho.mqtt.client as mqtt
 import test_helpers
 import test_mqtt_base
 
@@ -51,6 +53,7 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
 
         cs = sorter.classification_service.classification_service.ClassificationService(
             host="127.0.0.1",
+            port=self.broker_port,
             enable_cnn=False,
             model_fp="models/moved_crop_centrally.h5",
         )
@@ -63,8 +66,20 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
                 "Test data is not available - run tools/download_unpack_test_data.py"
             )
 
+        publisher = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+        publisher.connect(self.broker_host, self.broker_port)
+
         for i in range(1):
+            # send classification request
             s.broadcast(b"CLF 5 " + bytes(str(path), "utf-8"))
+            payload = {
+                "object_id": 5,
+                "image_path": str(path),
+            }
+            publisher.publish(
+                "bricksortingmachine/classification/request", json.dumps(payload)
+            )
+
             time.sleep(
                 1.5
             )  # classification waits 1s artificially before sending result
@@ -73,6 +88,8 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
             )
 
         # stop network
+        time.sleep(1)
+        publisher.disconnect()
         cs.stop()
         s.stop()
         time.sleep(0.5)

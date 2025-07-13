@@ -14,7 +14,8 @@ The core principles of this hierarchy are:
 ### General Recommendations
 
 * **QoS (Quality of Service)**:
-    * Use **QoS 1** (At least once) for commands and critical state changes (`request`, `result`, `command`) to ensure they are delivered.
+    * Use **QoS 2** (Exactly once) for commands which cause high computational load (`request`).
+    * Use **QoS 1** (At least once) for commands and critical state changes (`result`, `command`) to ensure they are delivered.
     * Use **QoS 0** (At most once) for high-frequency telemetry data (`telemetry`) where losing an occasional message is acceptable.
 * **Retained Messages**:
     * Use the **retain flag** (`true`) for `status` topics. This ensures that any new service connecting to the broker immediately receives the last known status of all other services.

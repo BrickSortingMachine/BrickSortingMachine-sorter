@@ -1,6 +1,7 @@
 import json
 import logging
 import pathlib
+import threading
 import time
 
 import paho.mqtt.client as mqtt
@@ -97,3 +98,90 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         cs.stop()
         s.stop()
         time.sleep(0.5)
+
+    def test_mqtt_status(self):
+        """
+        Tests the MQTT online/offline status messages.
+        """
+        self.setup_logging()
+
+        # Use a threading Event to signal when the message is received
+        message_received_event = threading.Event()
+        received_message = None
+
+        def on_message(client, userdata, msg):
+            nonlocal received_message
+            logging.info(f"MQTT message received: {msg.topic} {msg.payload}")
+            received_message = msg
+            message_received_event.set()
+
+        # Subscriber to listen for the status message
+        subscriber = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+        subscriber.on_message = on_message
+        subscriber.connect(self.broker_host, self.broker_port)
+        subscriber.subscribe("bricksortingmachine/classification/status", qos=1)
+        subscriber.loop_start()
+        subscriber.daemon = True
+        time.sleep(0.1)
+
+        # Dummy TCP server that the service needs
+        tcp_server = sorter.network.tcp_server.TcpServer(
+            "0.0.0.0", 5005, DummyCommandHandler
+        )
+        tcp_server.start()
+        time.sleep(0.1)
+
+        # Instantiate the service, which should publish "online"
+        cs = sorter.classification_service.classification_service.ClassificationService(
+            host="127.0.0.1",
+            port=self.broker_port,
+            enable_cnn=False,
+            model_fp="models/moved_crop_centrally.h5",
+        )
+
+        # Wait for the message to be received, with a timeout
+        message_received = message_received_event.wait(timeout=2)
+        self.assertTrue(
+            message_received, "Did not receive MQTT status message in time."
+        )
+
+        # Assert the "online" message content
+        self.assertIsNotNone(received_message)
+        self.assertEqual(
+            received_message.topic, "bricksortingmachine/classification/status"
+        )
+        self.assertEqual(received_message.payload, b"online")
+        self.assertEqual(received_message.qos, 1)
+
+        # --- Verify retained message ---
+        message_received_event.clear()
+        received_message = None
+
+        # Create a new subscriber that should get the retained message immediately
+        retained_subscriber = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+        retained_subscriber.on_message = on_message
+        retained_subscriber.connect(self.broker_host, self.broker_port)
+        retained_subscriber.subscribe(
+            "bricksortingmachine/classification/status", qos=1
+        )
+        retained_subscriber.loop_start()
+        retained_subscriber.daemon = True
+
+        message_received = message_received_event.wait(timeout=2)
+        self.assertTrue(
+            message_received, "Did not receive retained MQTT status message."
+        )
+
+        self.assertIsNotNone(received_message)
+        self.assertEqual(received_message.payload, b"online")
+
+        # Cleanup
+        retained_subscriber.loop_stop()
+        retained_subscriber.disconnect()
+        subscriber.loop_stop()
+        subscriber.disconnect()
+        cs.mqtt_client.disconnect()
+        cs.stop()
+        time.sleep(1)  # Allow time for cs thread to stop
+        tcp_server.stop()
+        time.sleep(0.5)  # Allow time for threads to stop

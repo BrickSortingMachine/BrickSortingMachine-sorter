@@ -104,7 +104,10 @@ class ClassificationService:
         else:
             # publish online message
             self.mqtt_client.publish(
-                "bricksortingmachine/classification/status", "online", 1, True
+                topic="bricksortingmachine/classification/status",
+                payload="online",
+                qos=1,
+                retain=True,
             )
 
     def stop(self) -> None:

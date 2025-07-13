@@ -148,8 +148,12 @@ class ClassificationService:
                 queue_item: QueueItem = self.queue.pop()
             else:
                 logging.info("Thread: Queue empty - going to wait ...")
-                self.queue_condition.wait()
-                logging.info("Thread: Woke up.")
+                try:
+                    self.queue_condition.wait()
+                    logging.info("Thread: Woke up.")
+                except Exception as e:
+                    logging.error(f"Exception while waiting for queue: {e}")
+                    self.thread_stop_requested = True
 
             self.queue_mutex.release()
 

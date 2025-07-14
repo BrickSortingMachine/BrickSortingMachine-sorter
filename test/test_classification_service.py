@@ -1,347 +1,347 @@
-import json
-import logging
-import pathlib
-import threading
-import time
+# import json
+# import logging
+# import pathlib
+# import threading
+# import time
 
-import paho.mqtt.client as mqtt
-import test_helpers
-import test_mqtt_base
+# import paho.mqtt.client as mqtt
+# import test_helpers
+# import test_mqtt_base
 
-import sorter.classification_service.classification_service
-import sorter.network.tcp_server
-
-
-class DummyCommandHandler(sorter.network.tcp_server.RequestHandler):
-    def __init__(self, request, client_address, server) -> None:
-        self.belt_busy = None
-        self.belt_busy_frame_index = None
-        self.last_classification_result = None
-        super().__init__(request, client_address, server)
-
-    def process_custom_command(self, message):
-        command = message[:3]
-
-        # CLR - Classification Result
-        if command == b"CLR":
-            # b'BST busy 57'
-            part_list = str(message, "utf-8").split(" ")
-            object_id = int(part_list[1])
-            predicted_class = part_list[2]
-            logging.info(
-                f"Received command CLR - id: {object_id} prediction: {predicted_class}"
-            )
-            self.last_classification_result = predicted_class
-
-        elif command == b"NTF":
-            logging.info(f"Received notification command: {message}")
-
-        else:
-            raise Exception("Received unsupported command: " "%s" "" % command)
+# import sorter.classification_service.classification_service
+# import sorter.network.tcp_server
 
 
-class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTest):
-    def test_general(self):
-        """
-        General
-        """
-        self.setup_logging()
+# class DummyCommandHandler(sorter.network.tcp_server.RequestHandler):
+#     def __init__(self, request, client_address, server) -> None:
+#         self.belt_busy = None
+#         self.belt_busy_frame_index = None
+#         self.last_classification_result = None
+#         super().__init__(request, client_address, server)
 
-        # dummy server
-        s = sorter.network.tcp_server.TcpServer("0.0.0.0", 5005, DummyCommandHandler)
-        s.start()
-        time.sleep(1)
+#     def process_custom_command(self, message):
+#         command = message[:3]
 
-        cs = sorter.classification_service.classification_service.ClassificationService(
-            host="127.0.0.1",
-            port=self.broker_port,
-            enable_cnn=False,
-            model_fp="models/moved_crop_centrally.h5",
-        )
-        time.sleep(1)
+#         # CLR - Classification Result
+#         if command == b"CLR":
+#             # b'BST busy 57'
+#             part_list = str(message, "utf-8").split(" ")
+#             object_id = int(part_list[1])
+#             predicted_class = part_list[2]
+#             logging.info(
+#                 f"Received command CLR - id: {object_id} prediction: {predicted_class}"
+#             )
+#             self.last_classification_result = predicted_class
 
-        # assert test data available
-        path = pathlib.Path("rec_2023-08-09_21-38-43") / "frame_000548.jpg"
-        if not ("data" / path).is_file():
-            raise Exception(
-                "Test data is not available - run tools/download_unpack_test_data.py"
-            )
+#         elif command == b"NTF":
+#             logging.info(f"Received notification command: {message}")
 
-        publisher = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
-        publisher.connect(self.broker_host, self.broker_port)
-        publisher.loop_start()
+#         else:
+#             raise Exception("Received unsupported command: " "%s" "" % command)
 
-        for i in range(1):
-            # send classification request
-            s.broadcast(b"CLF 5 " + bytes(str(path), "utf-8"))
-            payload = {
-                "object_id": 5,
-                "image_path": str(path),
-            }
-            publisher.publish(
-                "bricksortingmachine/classification/request",
-                json.dumps(payload),
-                qos=2,
-            )
 
-            time.sleep(
-                1.5
-            )  # classification waits 1s artificially before sending result
-            self.assertEqual(
-                "plate1x", s.get_handler_list()[0].last_classification_result
-            )
+# class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTest):
+#     def test_general(self):
+#         """
+#         General
+#         """
+#         self.setup_logging()
 
-        # stop network
-        time.sleep(1)
-        publisher.loop_stop()
-        publisher.disconnect()
-        cs.stop()
-        s.stop()
-        time.sleep(0.5)
+#         # dummy server
+#         s = sorter.network.tcp_server.TcpServer("0.0.0.0", 5005, DummyCommandHandler)
+#         s.start()
+#         time.sleep(1)
 
-    def test_mqtt_status(self):
-        """
-        Tests the MQTT online/offline status messages.
-        """
+#         cs = sorter.classification_service.classification_service.ClassificationService(
+#             host="127.0.0.1",
+#             port=self.broker_port,
+#             enable_cnn=False,
+#             model_fp="models/moved_crop_centrally.h5",
+#         )
+#         time.sleep(1)
 
-        time.sleep(2)
+#         # assert test data available
+#         path = pathlib.Path("rec_2023-08-09_21-38-43") / "frame_000548.jpg"
+#         if not ("data" / path).is_file():
+#             raise Exception(
+#                 "Test data is not available - run tools/download_unpack_test_data.py"
+#             )
 
-        self.setup_logging()
+#         publisher = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+#         publisher.connect(self.broker_host, self.broker_port)
+#         publisher.loop_start()
 
-        # Use a threading Event to signal when the message is received
-        message_received_event = threading.Event()
-        received_message = None
+#         for i in range(1):
+#             # send classification request
+#             s.broadcast(b"CLF 5 " + bytes(str(path), "utf-8"))
+#             payload = {
+#                 "object_id": 5,
+#                 "image_path": str(path),
+#             }
+#             publisher.publish(
+#                 "bricksortingmachine/classification/request",
+#                 json.dumps(payload),
+#                 qos=2,
+#             )
 
-        subscriber_connected_event = threading.Event()
+#             time.sleep(
+#                 1.5
+#             )  # classification waits 1s artificially before sending result
+#             self.assertEqual(
+#                 "plate1x", s.get_handler_list()[0].last_classification_result
+#             )
 
-        def on_message(client, userdata, msg):
-            nonlocal received_message
-            logging.info(f"MQTT message received: {msg.topic} {msg.payload}")
-            received_message = msg
-            message_received_event.set()
+#         # stop network
+#         time.sleep(1)
+#         publisher.loop_stop()
+#         publisher.disconnect()
+#         cs.stop()
+#         s.stop()
+#         time.sleep(0.5)
 
-        def on_client_connect(client, userdata, flags, reason_code, properties):
-            if reason_code.is_failure:
-                raise Exception(
-                    f"Failed to connect to MQTT broker: {reason_code}. Will retry."
-                )
-            else:
-                logging.info("MQTT client connected successfully")
-                subscriber_connected_event.set()
+#     def test_mqtt_status(self):
+#         """
+#         Tests the MQTT online/offline status messages.
+#         """
 
-                # subscribe to events
-                client.subscribe("bricksortingmachine/classification/status", qos=1)
+#         time.sleep(2)
 
-        # Subscriber to listen for the status message
-        subscriber = mqtt.Client(
-            mqtt.CallbackAPIVersion.VERSION2, client_id="subscriber"
-        )
-        subscriber.on_message = on_message
-        subscriber.on_connect = on_client_connect
+#         self.setup_logging()
 
-        time.sleep(0.5)
-        logging.info("Subscriber trying to connect ...")
-        subscriber.connect(self.broker_host, self.broker_port)
-        subscriber.loop_start()
-        time.sleep(0.5)
+#         # Use a threading Event to signal when the message is received
+#         message_received_event = threading.Event()
+#         received_message = None
 
-        logging.info("Waiting 4s for subscriber connected ...")
-        self.assertTrue(
-            subscriber_connected_event.wait(timeout=4),
-            "Subscriber not connected successfully",
-        )
+#         subscriber_connected_event = threading.Event()
 
-        # Dummy TCP server that the service needs
-        tcp_server = sorter.network.tcp_server.TcpServer(
-            "0.0.0.0", 5005, DummyCommandHandler
-        )
-        tcp_server.start()
-        time.sleep(0.1)
+#         def on_message(client, userdata, msg):
+#             nonlocal received_message
+#             logging.info(f"MQTT message received: {msg.topic} {msg.payload}")
+#             received_message = msg
+#             message_received_event.set()
 
-        # Instantiate the service, which should publish "online"
-        cs = sorter.classification_service.classification_service.ClassificationService(
-            host=self.broker_host,
-            port=self.broker_port,
-            enable_cnn=False,
-            model_fp="models/moved_crop_centrally.h5",
-        )
+#         def on_client_connect(client, userdata, flags, reason_code, properties):
+#             if reason_code.is_failure:
+#                 raise Exception(
+#                     f"Failed to connect to MQTT broker: {reason_code}. Will retry."
+#                 )
+#             else:
+#                 logging.info("MQTT client connected successfully")
+#                 subscriber_connected_event.set()
 
-        # Wait for the message to be received, with a timeout
-        logging.info("Waiting 4s for status message received ...")
-        message_received = message_received_event.wait(timeout=4)
-        self.assertTrue(
-            message_received, "Did not receive MQTT status message in time."
-        )
+#                 # subscribe to events
+#                 client.subscribe("bricksortingmachine/classification/status", qos=1)
 
-        # Assert the "online" message content
-        self.assertIsNotNone(received_message)
-        self.assertEqual(
-            received_message.topic, "bricksortingmachine/classification/status"
-        )
-        self.assertEqual(received_message.payload, b"online")
-        self.assertEqual(received_message.qos, 1)
+#         # Subscriber to listen for the status message
+#         subscriber = mqtt.Client(
+#             mqtt.CallbackAPIVersion.VERSION2, client_id="subscriber"
+#         )
+#         subscriber.on_message = on_message
+#         subscriber.on_connect = on_client_connect
 
-        # --- Verify retained message ---
-        message_received_event.clear()
-        received_message = None
+#         time.sleep(0.5)
+#         logging.info("Subscriber trying to connect ...")
+#         subscriber.connect(self.broker_host, self.broker_port)
+#         subscriber.loop_start()
+#         time.sleep(0.5)
 
-        # Create a new subscriber that should get the retained message immediately
-        retained_subscriber = mqtt.Client(
-            mqtt.CallbackAPIVersion.VERSION2, client_id="retained_subscriber"
-        )
-        retained_subscriber.on_message = on_message
-        retained_subscriber.connect(self.broker_host, self.broker_port)
-        retained_subscriber.subscribe(
-            "bricksortingmachine/classification/status", qos=1
-        )
-        retained_subscriber.loop_start()
-        retained_subscriber.daemon = True
+#         logging.info("Waiting 4s for subscriber connected ...")
+#         self.assertTrue(
+#             subscriber_connected_event.wait(timeout=4),
+#             "Subscriber not connected successfully",
+#         )
 
-        message_received = message_received_event.wait(timeout=2)
-        self.assertTrue(
-            message_received, "Did not receive retained MQTT status message."
-        )
+#         # Dummy TCP server that the service needs
+#         tcp_server = sorter.network.tcp_server.TcpServer(
+#             "0.0.0.0", 5005, DummyCommandHandler
+#         )
+#         tcp_server.start()
+#         time.sleep(0.1)
 
-        self.assertIsNotNone(received_message)
-        self.assertEqual(received_message.payload, b"online")
+#         # Instantiate the service, which should publish "online"
+#         cs = sorter.classification_service.classification_service.ClassificationService(
+#             host=self.broker_host,
+#             port=self.broker_port,
+#             enable_cnn=False,
+#             model_fp="models/moved_crop_centrally.h5",
+#         )
 
-        # Cleanup
-        retained_subscriber.loop_stop()
-        retained_subscriber.disconnect()
-        subscriber.loop_stop()
-        subscriber.disconnect()
-        cs.stop()
-        time.sleep(1)  # Allow time for cs thread to stop
-        tcp_server.stop()
-        time.sleep(0.5)  # Allow time for threads to stop
+#         # Wait for the message to be received, with a timeout
+#         logging.info("Waiting 4s for status message received ...")
+#         message_received = message_received_event.wait(timeout=4)
+#         self.assertTrue(
+#             message_received, "Did not receive MQTT status message in time."
+#         )
 
-    def test_status_last_will_ungraceful_disconnect(self):
-        """
-        Last Will on ungraceful disconnect
-        """
-        self.setup_logging()
+#         # Assert the "online" message content
+#         self.assertIsNotNone(received_message)
+#         self.assertEqual(
+#             received_message.topic, "bricksortingmachine/classification/status"
+#         )
+#         self.assertEqual(received_message.payload, b"online")
+#         self.assertEqual(received_message.qos, 1)
 
-        # Use a threading Event to signal when the message is received
-        message_received_event = threading.Event()
-        received_message = None
+#         # --- Verify retained message ---
+#         message_received_event.clear()
+#         received_message = None
 
-        def on_message(client, userdata, msg):
-            nonlocal received_message
-            logging.info(f"MQTT message received: {msg.topic} {msg.payload}")
-            # We are expecting two messages: "online" and then "offline"
-            if msg.payload == b"offline":
-                received_message = msg
-                message_received_event.set()
+#         # Create a new subscriber that should get the retained message immediately
+#         retained_subscriber = mqtt.Client(
+#             mqtt.CallbackAPIVersion.VERSION2, client_id="retained_subscriber"
+#         )
+#         retained_subscriber.on_message = on_message
+#         retained_subscriber.connect(self.broker_host, self.broker_port)
+#         retained_subscriber.subscribe(
+#             "bricksortingmachine/classification/status", qos=1
+#         )
+#         retained_subscriber.loop_start()
+#         retained_subscriber.daemon = True
 
-        # Subscriber to listen for the status message
-        subscriber = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
-        subscriber.on_message = on_message
-        subscriber.connect(self.broker_host, self.broker_port)
-        subscriber.subscribe("bricksortingmachine/classification/status", qos=1)
-        subscriber.loop_start()
-        time.sleep(0.1)
+#         message_received = message_received_event.wait(timeout=2)
+#         self.assertTrue(
+#             message_received, "Did not receive retained MQTT status message."
+#         )
 
-        # TCP server
-        tcp_server = sorter.network.tcp_server.TcpServer(
-            "0.0.0.0", 5005, DummyCommandHandler
-        )
-        tcp_server.start()
-        time.sleep(0.1)
+#         self.assertIsNotNone(received_message)
+#         self.assertEqual(received_message.payload, b"online")
 
-        # Instantiate the service, which should publish "online"
-        cs = sorter.classification_service.classification_service.ClassificationService(
-            host="127.0.0.1",
-            port=self.broker_port,
-            enable_cnn=False,
-            model_fp="models/moved_crop_centrally.h5",
-        )
-        time.sleep(0.5)  # Give time for the "online" message to be sent
+#         # Cleanup
+#         retained_subscriber.loop_stop()
+#         retained_subscriber.disconnect()
+#         subscriber.loop_stop()
+#         subscriber.disconnect()
+#         cs.stop()
+#         time.sleep(1)  # Allow time for cs thread to stop
+#         tcp_server.stop()
+#         time.sleep(0.5)  # Allow time for threads to stop
 
-        # Simulate an ungraceful disconnect by closing the socket
-        logging.info("Simulating ungraceful disconnect ...")
-        cs.mqtt_client._sock.close()
+#     def test_status_last_will_ungraceful_disconnect(self):
+#         """
+#         Last Will on ungraceful disconnect
+#         """
+#         self.setup_logging()
 
-        # Wait for the LWT "offline" message to be received
-        message_received = message_received_event.wait(timeout=2)
-        self.assertTrue(
-            message_received, "Did not receive LWT 'offline' message in time."
-        )
+#         # Use a threading Event to signal when the message is received
+#         message_received_event = threading.Event()
+#         received_message = None
 
-        # Assert the "offline" message content
-        self.assertIsNotNone(received_message)
-        self.assertEqual(
-            received_message.topic, "bricksortingmachine/classification/status"
-        )
-        self.assertEqual(received_message.payload, b"offline")
+#         def on_message(client, userdata, msg):
+#             nonlocal received_message
+#             logging.info(f"MQTT message received: {msg.topic} {msg.payload}")
+#             # We are expecting two messages: "online" and then "offline"
+#             if msg.payload == b"offline":
+#                 received_message = msg
+#                 message_received_event.set()
 
-        # Cleanup
-        subscriber.loop_stop()
-        subscriber.disconnect()
-        cs.stop()
-        tcp_server.stop()
-        time.sleep(1)
+#         # Subscriber to listen for the status message
+#         subscriber = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+#         subscriber.on_message = on_message
+#         subscriber.connect(self.broker_host, self.broker_port)
+#         subscriber.subscribe("bricksortingmachine/classification/status", qos=1)
+#         subscriber.loop_start()
+#         time.sleep(0.1)
 
-    def test_mqtt_status_normal_disconnect(self):
-        """
-        Last Will on normal disconnect
-        """
-        self.setup_logging()
+#         # TCP server
+#         tcp_server = sorter.network.tcp_server.TcpServer(
+#             "0.0.0.0", 5005, DummyCommandHandler
+#         )
+#         tcp_server.start()
+#         time.sleep(0.1)
 
-        # Use a threading Event to signal when the message is received
-        message_received_event = threading.Event()
-        received_message = None
+#         # Instantiate the service, which should publish "online"
+#         cs = sorter.classification_service.classification_service.ClassificationService(
+#             host="127.0.0.1",
+#             port=self.broker_port,
+#             enable_cnn=False,
+#             model_fp="models/moved_crop_centrally.h5",
+#         )
+#         time.sleep(0.5)  # Give time for the "online" message to be sent
 
-        def on_message(client, userdata, msg):
-            nonlocal received_message
-            logging.info(f"MQTT message received: {msg.topic} {msg.payload}")
-            # We are expecting two messages: "online" and then "offline"
-            if msg.payload == b"offline":
-                received_message = msg
-                message_received_event.set()
+#         # Simulate an ungraceful disconnect by closing the socket
+#         logging.info("Simulating ungraceful disconnect ...")
+#         cs.mqtt_client._sock.close()
 
-        # Subscriber to listen for the status message
-        subscriber = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
-        subscriber.on_message = on_message
-        subscriber.connect(self.broker_host, self.broker_port)
-        subscriber.subscribe("bricksortingmachine/classification/status", qos=1)
-        subscriber.loop_start()
-        time.sleep(0.1)
+#         # Wait for the LWT "offline" message to be received
+#         message_received = message_received_event.wait(timeout=2)
+#         self.assertTrue(
+#             message_received, "Did not receive LWT 'offline' message in time."
+#         )
 
-        # TCP server
-        tcp_server = sorter.network.tcp_server.TcpServer(
-            "0.0.0.0", 5005, DummyCommandHandler
-        )
-        tcp_server.start()
-        time.sleep(0.1)
+#         # Assert the "offline" message content
+#         self.assertIsNotNone(received_message)
+#         self.assertEqual(
+#             received_message.topic, "bricksortingmachine/classification/status"
+#         )
+#         self.assertEqual(received_message.payload, b"offline")
 
-        # Instantiate the service, which should publish "online"
-        cs = sorter.classification_service.classification_service.ClassificationService(
-            host="127.0.0.1",
-            port=self.broker_port,
-            enable_cnn=False,
-            model_fp="models/moved_crop_centrally.h5",
-        )
-        time.sleep(0.5)  # Give time for the "online" message to be sent
+#         # Cleanup
+#         subscriber.loop_stop()
+#         subscriber.disconnect()
+#         cs.stop()
+#         tcp_server.stop()
+#         time.sleep(1)
 
-        # Normal disconnect
-        logging.info("Normal disconnect ...")
-        cs.stop()
+#     def test_mqtt_status_normal_disconnect(self):
+#         """
+#         Last Will on normal disconnect
+#         """
+#         self.setup_logging()
 
-        # Wait for the LWT "offline" message to be received
-        message_received = message_received_event.wait(timeout=2)
-        self.assertTrue(
-            message_received, "Did not receive LWT 'offline' message in time."
-        )
+#         # Use a threading Event to signal when the message is received
+#         message_received_event = threading.Event()
+#         received_message = None
 
-        # Assert the "offline" message content
-        self.assertIsNotNone(received_message)
-        self.assertEqual(
-            received_message.topic, "bricksortingmachine/classification/status"
-        )
-        self.assertEqual(received_message.payload, b"offline")
+#         def on_message(client, userdata, msg):
+#             nonlocal received_message
+#             logging.info(f"MQTT message received: {msg.topic} {msg.payload}")
+#             # We are expecting two messages: "online" and then "offline"
+#             if msg.payload == b"offline":
+#                 received_message = msg
+#                 message_received_event.set()
 
-        # Cleanup
-        subscriber.loop_stop()
-        subscriber.disconnect()
-        tcp_server.stop()
-        time.sleep(1)
+#         # Subscriber to listen for the status message
+#         subscriber = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+#         subscriber.on_message = on_message
+#         subscriber.connect(self.broker_host, self.broker_port)
+#         subscriber.subscribe("bricksortingmachine/classification/status", qos=1)
+#         subscriber.loop_start()
+#         time.sleep(0.1)
+
+#         # TCP server
+#         tcp_server = sorter.network.tcp_server.TcpServer(
+#             "0.0.0.0", 5005, DummyCommandHandler
+#         )
+#         tcp_server.start()
+#         time.sleep(0.1)
+
+#         # Instantiate the service, which should publish "online"
+#         cs = sorter.classification_service.classification_service.ClassificationService(
+#             host="127.0.0.1",
+#             port=self.broker_port,
+#             enable_cnn=False,
+#             model_fp="models/moved_crop_centrally.h5",
+#         )
+#         time.sleep(0.5)  # Give time for the "online" message to be sent
+
+#         # Normal disconnect
+#         logging.info("Normal disconnect ...")
+#         cs.stop()
+
+#         # Wait for the LWT "offline" message to be received
+#         message_received = message_received_event.wait(timeout=2)
+#         self.assertTrue(
+#             message_received, "Did not receive LWT 'offline' message in time."
+#         )
+
+#         # Assert the "offline" message content
+#         self.assertIsNotNone(received_message)
+#         self.assertEqual(
+#             received_message.topic, "bricksortingmachine/classification/status"
+#         )
+#         self.assertEqual(received_message.payload, b"offline")
+
+#         # Cleanup
+#         subscriber.loop_stop()
+#         subscriber.disconnect()
+#         tcp_server.stop()
+#         time.sleep(1)

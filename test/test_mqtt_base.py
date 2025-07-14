@@ -1,3 +1,5 @@
+import time
+
 import test_helpers
 from test_amqtt_broker import AmqttBrokerThread
 
@@ -50,5 +52,7 @@ class MqttTestCase(test_helpers.BaseTest):
             else:
                 print("(tearDown) Broker stopped and thread joined.")
         self.broker_thread = None
+
+        time.sleep(0.5)
 
         self.assert_threads_stopped()

@@ -60,7 +60,7 @@ class TestMyServiceCommunication(test_mqtt_base.MqttTestCase):
         def on_message(client, userdata, msg):
             nonlocal received_message
             received_message = msg.payload.decode()
-            logging.info(f"########### MQTT message received: {received_message}")
+            logging.info(f"MQTT message received: {received_message}")
 
         def on_mqtt_connect(client, userdata, flags, reason_code, properties):
             if reason_code.is_failure:

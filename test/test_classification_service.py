@@ -209,10 +209,9 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         subscriber.connect(self.broker_host, self.broker_port)
         subscriber.subscribe("bricksortingmachine/classification/status", qos=1)
         subscriber.loop_start()
-        subscriber.daemon = True
         time.sleep(0.1)
 
-        # Dummy TCP server that the service needs
+        # TCP server
         tcp_server = sorter.network.tcp_server.TcpServer(
             "0.0.0.0", 5005, DummyCommandHandler
         )
@@ -229,26 +228,29 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         time.sleep(0.5)  # Give time for the "online" message to be sent
 
         # Simulate an ungraceful disconnect by closing the socket
-        logging.info("Simulating ungraceful disconnect...")
-        # cs.mqtt_client._sock.close()
+        logging.info("Simulating ungraceful disconnect ...")
+        cs.mqtt_client._sock.close()
+
+        logging.info("Stopping classification service to trigger last will ...")
+        cs.stop()
 
         # Wait for the LWT "offline" message to be received
-        # message_received = message_received_event.wait(timeout=2)
-        # self.assertTrue(
-        #     message_received, "Did not receive LWT 'offline' message in time."
-        # )
+        message_received = message_received_event.wait(timeout=2)
+        self.assertTrue(
+            message_received, "Did not receive LWT 'offline' message in time."
+        )
 
-        # # Assert the "offline" message content
-        # self.assertIsNotNone(received_message)
-        # self.assertEqual(
-        #     received_message.topic, "bricksortingmachine/classification/status"
-        # )
-        # self.assertEqual(received_message.payload, b"offline")
+        # Assert the "offline" message content
+        self.assertIsNotNone(received_message)
+        self.assertEqual(
+            received_message.topic, "bricksortingmachine/classification/status"
+        )
+        self.assertEqual(received_message.payload, b"offline")
 
         # Cleanup
         subscriber.loop_stop()
         subscriber.disconnect()
-        cs.stop()
+
         time.sleep(1)
         tcp_server.stop()
         time.sleep(0.5)

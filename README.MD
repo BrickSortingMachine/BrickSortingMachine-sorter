@@ -66,3 +66,6 @@ Run static type checking via `mypy` (type hints are still pretty sparse in the c
 ```
 python -m mypy sorter.py
 ```
+
+## Task List
+- [ ] Ensure all mqtt subscriptions are done in the on_connect method (to be repeated on re-connect)

@@ -126,6 +126,9 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
                 logging.info("MQTT client connected successfully")
                 subscriber_connected_event.set()
 
+                # subscribe to events
+                client.subscribe("bricksortingmachine/classification/status", qos=1)
+
         # Subscriber to listen for the status message
         subscriber = mqtt.Client(
             mqtt.CallbackAPIVersion.VERSION2, client_id="subscriber"
@@ -136,7 +139,6 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         time.sleep(0.5)
         logging.info("Subscriber trying to connect ...")
         subscriber.connect(self.broker_host, self.broker_port)
-        subscriber.subscribe("bricksortingmachine/classification/status", qos=1)
         subscriber.loop_start()
         time.sleep(0.5)
 

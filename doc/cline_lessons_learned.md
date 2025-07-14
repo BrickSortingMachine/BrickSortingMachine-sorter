@@ -21,3 +21,7 @@ This document summarizes key lessons learned during development and testing to a
     1.  Explicitly call `disconnect()` on the client instance.
     2.  Follow up with `loop_stop()`.
     3.  Add a `time.sleep()` in the test's cleanup phase to give the threads sufficient time to terminate before the test finishes.
+
+## 3. Subscribe in on_connect method
+
+* Always put the subscribe method into the on_connect method of a paho client. This ensures, that the subscription is re-done if the client was disconnected / is automatically reconnecting.

@@ -115,11 +115,20 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
             received_message = msg
             message_received_event.set()
 
+        def on_client_connect(client, userdata, flags, reason_code, properties):
+            if reason_code.is_failure:
+                raise Exception(
+                    f"Failed to connect to MQTT broker: {reason_code}. Will retry."
+                )
+            else:
+                logging.info("MQTT client connected successfully")
+
         # Subscriber to listen for the status message
         subscriber = mqtt.Client(
             mqtt.CallbackAPIVersion.VERSION2, client_id="subscriber"
         )
         subscriber.on_message = on_message
+        subscriber.on_connect = on_client_connect
         subscriber.connect(self.broker_host, self.broker_port)
         subscriber.subscribe("bricksortingmachine/classification/status", qos=1)
         subscriber.loop_start()

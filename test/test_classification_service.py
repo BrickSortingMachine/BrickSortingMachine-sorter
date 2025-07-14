@@ -116,7 +116,9 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
             message_received_event.set()
 
         # Subscriber to listen for the status message
-        subscriber = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+        subscriber = mqtt.Client(
+            mqtt.CallbackAPIVersion.VERSION2, client_id="subscriber"
+        )
         subscriber.on_message = on_message
         subscriber.connect(self.broker_host, self.broker_port)
         subscriber.subscribe("bricksortingmachine/classification/status", qos=1)
@@ -158,7 +160,9 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         received_message = None
 
         # Create a new subscriber that should get the retained message immediately
-        retained_subscriber = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+        retained_subscriber = mqtt.Client(
+            mqtt.CallbackAPIVersion.VERSION2, client_id="retained_subscriber"
+        )
         retained_subscriber.on_message = on_message
         retained_subscriber.connect(self.broker_host, self.broker_port)
         retained_subscriber.subscribe(

@@ -88,7 +88,9 @@ class ClassificationService:
         self.notification_client = nc.NotificationClient(self.tcp_client)
 
         # mqtt
-        self.mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+        self.mqtt_client = mqtt.Client(
+            mqtt.CallbackAPIVersion.VERSION2, client_id="ClassificationService"
+        )
         self.mqtt_client.on_connect = self.on_mqtt_connect
         self.mqtt_client.will_set(
             "bricksortingmachine/classification/status", "offline", 1, True

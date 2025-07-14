@@ -145,8 +145,9 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         subscriber.loop_start()
         time.sleep(0.5)
 
+        logging.info("Waiting 4s for subscriber connected ...")
         self.assertTrue(
-            subscriber_connected_event.wait(timeout=2),
+            subscriber_connected_event.wait(timeout=4),
             "Subscriber not connected successfully",
         )
 

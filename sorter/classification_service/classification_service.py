@@ -111,6 +111,14 @@ class ClassificationService:
             )
 
     def stop(self) -> None:
+        # publish offline message
+        self.mqtt_client.publish(
+            topic="bricksortingmachine/classification/status",
+            payload="offline",
+            qos=1,
+            retain=True,
+        )
+
         # mqtt
         self.mqtt_client.loop_stop()
         self.mqtt_client.disconnect()

@@ -185,9 +185,9 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         tcp_server.stop()
         time.sleep(0.5)  # Allow time for threads to stop
 
-    def test_mqtt_last_will(self):
+    def test_mqtt_last_will_ungraceful(self):
         """
-        Tests that the Last Will and Testament is published on ungraceful disconnect.
+        Last Will on ungraceful disconnect
         """
         self.setup_logging()
 
@@ -231,9 +231,6 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         logging.info("Simulating ungraceful disconnect ...")
         cs.mqtt_client._sock.close()
 
-        logging.info("Stopping classification service to trigger last will ...")
-        cs.stop()
-
         # Wait for the LWT "offline" message to be received
         message_received = message_received_event.wait(timeout=2)
         self.assertTrue(
@@ -250,7 +247,6 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         # Cleanup
         subscriber.loop_stop()
         subscriber.disconnect()
-
-        time.sleep(1)
+        cs.stop()
         tcp_server.stop()
-        time.sleep(0.5)
+        time.sleep(1)

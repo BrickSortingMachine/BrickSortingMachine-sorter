@@ -20,7 +20,7 @@ class MqttTestCase(test_helpers.BaseTest):
         """
         self.setup_logging()
 
-        logging.info("\n(setUp) Starting AMQTT broker for test...")
+        logging.info("(setUp) Starting AMQTT broker for test...")
         self.broker_host = "localhost"
         self.broker_port = 1884
         self.broker_thread = AmqttBrokerThread(
@@ -43,7 +43,7 @@ class MqttTestCase(test_helpers.BaseTest):
         Stops the amqtt broker thread.
         """
         if self.broker_thread and self.broker_thread.is_alive():
-            logging.info("\n(tearDown) Stopping AMQTT broker...")
+            logging.info("(tearDown) Stopping AMQTT broker...")
             self.broker_thread.stop()
             # Wait for the thread to finish
             self.broker_thread.join(timeout=5)

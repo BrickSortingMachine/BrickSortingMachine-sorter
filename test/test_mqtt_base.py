@@ -1,3 +1,4 @@
+import logging
 import time
 
 import test_helpers
@@ -19,7 +20,7 @@ class MqttTestCase(test_helpers.BaseTest):
         """
         self.setup_logging()
 
-        print("\n(setUp) Starting AMQTT broker for test...")
+        logging.info("\n(setUp) Starting AMQTT broker for test...")
         self.broker_host = "localhost"
         self.broker_port = 1884
         self.broker_thread = AmqttBrokerThread(
@@ -32,7 +33,9 @@ class MqttTestCase(test_helpers.BaseTest):
         if not started:
             raise TimeoutError("Timed out waiting for AMQTT broker to start.")
 
-        print(f"(setUp) Broker is ready on {self.broker_host}:{self.broker_port}")
+        logging.info(
+            f"(setUp) Broker is ready on {self.broker_host}:{self.broker_port}"
+        )
 
     def tearDown(self):
         """
@@ -40,17 +43,17 @@ class MqttTestCase(test_helpers.BaseTest):
         Stops the amqtt broker thread.
         """
         if self.broker_thread and self.broker_thread.is_alive():
-            print("\n(tearDown) Stopping AMQTT broker...")
+            logging.info("\n(tearDown) Stopping AMQTT broker...")
             self.broker_thread.stop()
             # Wait for the thread to finish
             self.broker_thread.join(timeout=5)
 
             if self.broker_thread.is_alive():
-                print(
+                logging.info(
                     "(tearDown) WARNING: Timed out waiting for broker thread to stop."
                 )
             else:
-                print("(tearDown) Broker stopped and thread joined.")
+                logging.info("(tearDown) Broker stopped and thread joined.")
         self.broker_thread = None
 
         time.sleep(0.5)

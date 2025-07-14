@@ -109,6 +109,8 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         message_received_event = threading.Event()
         received_message = None
 
+        subscriber_connected_event = threading.Event()
+
         def on_message(client, userdata, msg):
             nonlocal received_message
             logging.info(f"MQTT message received: {msg.topic} {msg.payload}")
@@ -122,6 +124,7 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
                 )
             else:
                 logging.info("MQTT client connected successfully")
+                subscriber_connected_event.set()
 
         # Subscriber to listen for the status message
         subscriber = mqtt.Client(
@@ -135,6 +138,11 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         subscriber.subscribe("bricksortingmachine/classification/status", qos=1)
         subscriber.loop_start()
         time.sleep(0.1)
+
+        self.assertTrue(
+            subscriber_connected_event.wait(timeout=2),
+            "Subscriber not connected successfully",
+        )
 
         # Dummy TCP server that the service needs
         tcp_server = sorter.network.tcp_server.TcpServer(

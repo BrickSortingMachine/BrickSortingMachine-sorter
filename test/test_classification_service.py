@@ -129,6 +129,8 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         )
         subscriber.on_message = on_message
         subscriber.on_connect = on_client_connect
+
+        time.sleep(0.5)
         subscriber.connect(self.broker_host, self.broker_port)
         subscriber.subscribe("bricksortingmachine/classification/status", qos=1)
         subscriber.loop_start()

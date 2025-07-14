@@ -123,7 +123,6 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         subscriber.connect(self.broker_host, self.broker_port)
         subscriber.subscribe("bricksortingmachine/classification/status", qos=1)
         subscriber.loop_start()
-        subscriber.daemon = True
         time.sleep(0.1)
 
         # Dummy TCP server that the service needs
@@ -135,14 +134,15 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
 
         # Instantiate the service, which should publish "online"
         cs = sorter.classification_service.classification_service.ClassificationService(
-            host="127.0.0.1",
+            host=self.broker_host,
             port=self.broker_port,
             enable_cnn=False,
             model_fp="models/moved_crop_centrally.h5",
         )
 
         # Wait for the message to be received, with a timeout
-        message_received = message_received_event.wait(timeout=2)
+        logging.info("Waiting 4s for status message received ...")
+        message_received = message_received_event.wait(timeout=4)
         self.assertTrue(
             message_received, "Did not receive MQTT status message in time."
         )

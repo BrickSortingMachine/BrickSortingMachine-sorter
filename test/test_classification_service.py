@@ -103,6 +103,9 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         """
         Tests the MQTT online/offline status messages.
         """
+
+        time.sleep(2)
+
         self.setup_logging()
 
         # Use a threading Event to signal when the message is received

@@ -24,11 +24,14 @@ class AmqttBrokerThread(threading.Thread):
             "listeners": {"default": {"type": "tcp", "bind": f"{host}:{port}"}},
             "sys_interval": 0,  # Disable $SYS topics for testing
             "topic-check": {"enabled": False},  # Allow any topic
-            "plugins": {
-                "amqtt.plugins.authentication.AnonymousAuthPlugin": {
-                    "allow-anonymous": True
+            "plugins": [
+                # enable anonymous login
+                {
+                    "amqtt.plugins.authentication.AnonymousAuthPlugin": {
+                        "allow-anonymous": True
+                    }
                 }
-            },  # enable anonymous login
+            ],
         }
         self.broker = None
         self.loop = None

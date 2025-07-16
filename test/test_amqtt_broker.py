@@ -28,7 +28,7 @@ class AmqttBrokerThread(threading.Thread):
                 # enable anonymous login
                 {
                     "amqtt.plugins.authentication.AnonymousAuthPlugin": {
-                        "allow-anonymous": True
+                        "allow_anonymous": True
                     }
                 }
             ],

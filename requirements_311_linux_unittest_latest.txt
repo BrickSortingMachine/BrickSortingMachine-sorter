@@ -1,0 +1,9 @@
+flake8
+numpy
+opencv-python
+matplotlib
+pillow
+tqdm
+pySerial
+paho-mqtt
+amqtt

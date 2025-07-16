@@ -22,16 +22,23 @@ or [YouTube channel](https://www.youtube.com/@BrickSortingMachine).
 If you want to build a LEGO® sorting machine yourself, I suggest to start with the [DIY build instructions](https://github.com/BrickSortingMachine). This repository maintains the sources to operate the LEGO® sorting machine. If you want to work on the machine learning components, the training scripts for the part classifier are maintained [here](https://github.com/BrickSortingMachine/BrickSortingMachine-training).
 
 ## Installation
-With prerequisites [Python 3.11](https://www.python.org) and [Conda](https://docs.conda.io/projects/miniconda) installed, setup conda environment:
+With prerequisites [Python 3.11](https://www.python.org) installed, setup environment:
 ```
-./update_environment.sh     # Linux
-update_environment_win.bat  # Windows
+# linux
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements_311_linux.txt
+
+# windows
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements_311_win.txt
 ```
 Adapt local config (currently no adaptions needed):
 ```
 cp config.json.example config.json
 ```
-The network communication layer is currently ported to mqtt replacing the previous text based socket communication. As a prerequisite the [mosquitto mqtt broker](https://mosquitto.org/) is needed to be installed. Please **do not install it as a service** since unit tests rely on frequently starting and stopping mosquitto for a clean test environment. Ensure mosquitto installation dir (e.g. `C:\Program Files\mosquitto`) is added to the PATH.
+**Work in Progress:** The network communication layer is currently ported to mqtt replacing the previous text based socket communication. As a prerequisite the [mosquitto mqtt broker](https://mosquitto.org/) is needed to be installed.
 
 ## Usage
 Machine controller (on raspberry pi, connected to motor drivers):

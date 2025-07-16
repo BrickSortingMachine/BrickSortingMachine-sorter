@@ -4,13 +4,13 @@ channels:
 dependencies:
   - python=3.11
   - pip
-  - flake8
+  - flake8==7.3.0
   - pip:
-    - numpy
-    - opencv-python
-    - matplotlib
-    - pillow
-    - tqdm
+    - numpy==2.1.3
+    - opencv-python==4.11.0.86
+    - matplotlib==3.10.3
+    - pillow==11.3.0
+    - tqdm==4.67.1
     - pySerial
-    - paho-mqtt
-    - amqtt
+    - paho-mqtt==2.1.0
+    - amqtt==0.11.1

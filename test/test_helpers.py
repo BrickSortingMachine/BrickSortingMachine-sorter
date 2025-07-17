@@ -7,7 +7,6 @@ import unittest
 
 class BaseTest(unittest.TestCase):
     def assert_threads_stopped(self):
-        logging.info("Checking all threads stopped ...")
         for thread in threading.enumerate():
             if thread.name != "MainThread":
                 # print callstack of non-stopped thread

@@ -20,7 +20,6 @@ class MqttTestCase(test_helpers.BaseTest):
         """
         self.setup_logging()
 
-        logging.info("(setUp) Starting AMQTT broker for test...")
         self.broker_host = "localhost"
         self.broker_port = 1884
         self.broker_thread = AmqttBrokerThread(
@@ -34,7 +33,7 @@ class MqttTestCase(test_helpers.BaseTest):
             raise TimeoutError("Timed out waiting for AMQTT broker to start.")
 
         logging.info(
-            f"(setUp) Broker is ready on {self.broker_host}:{self.broker_port}"
+            f"(setUp) aMQTT broker is ready on {self.broker_host}:{self.broker_port}"
         )
 
     def tearDown(self):

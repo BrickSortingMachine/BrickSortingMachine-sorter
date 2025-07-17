@@ -69,7 +69,6 @@ class AmqttBrokerThread(threading.Thread):
         self.broker = Broker(config=self.config)
         await self.broker.start()
 
-        logging.info(f"(Broker Thread) AMQTT broker started on {self.host}:{self.port}")
         self.started_event.set()
 
         try:
@@ -78,7 +77,6 @@ class AmqttBrokerThread(threading.Thread):
             # This can happen during cleanup, and it's okay.
             pass
         finally:
-            logging.info("(Broker Thread) AMQTT broker shutting down.")
             await self.broker.shutdown()
 
     def stop(self):

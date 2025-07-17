@@ -25,9 +25,13 @@ class TestMyServiceCommunication(test_mqtt_base.MqttTestCase):
             mqtt.CallbackAPIVersion.VERSION2,
         )
         subscriber.on_message = on_message
+
+        def on_subscriber_connect(client, userdata, flags, reason_code, properties):
+            client.subscribe("my/test/topic")
+
+        subscriber.on_connect = on_subscriber_connect
         subscriber.connect(self.broker_host, self.broker_port)
         subscriber.loop_start()
-        subscriber.subscribe("my/test/topic")
 
         # Publish a message
         publisher = mqtt.Client(

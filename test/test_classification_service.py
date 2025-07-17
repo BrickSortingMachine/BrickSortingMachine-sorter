@@ -190,10 +190,14 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
             mqtt.CallbackAPIVersion.VERSION2, client_id="retained_subscriber"
         )
         retained_subscriber.on_message = on_message
+
+        def on_retained_subscriber_connect(
+            client, userdata, flags, reason_code, properties
+        ):
+            client.subscribe("bricksortingmachine/classification/status", qos=1)
+
+        retained_subscriber.on_connect = on_retained_subscriber_connect
         retained_subscriber.connect(self.broker_host, self.broker_port)
-        retained_subscriber.subscribe(
-            "bricksortingmachine/classification/status", qos=1
-        )
         retained_subscriber.loop_start()
         retained_subscriber.daemon = True
 
@@ -236,8 +240,12 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         # Subscriber to listen for the status message
         subscriber = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
         subscriber.on_message = on_message
+
+        def on_subscriber_connect(client, userdata, flags, reason_code, properties):
+            client.subscribe("bricksortingmachine/classification/status", qos=1)
+
+        subscriber.on_connect = on_subscriber_connect
         subscriber.connect(self.broker_host, self.broker_port)
-        subscriber.subscribe("bricksortingmachine/classification/status", qos=1)
         subscriber.loop_start()
         time.sleep(0.1)
 
@@ -302,8 +310,12 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         # Subscriber to listen for the status message
         subscriber = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
         subscriber.on_message = on_message
+
+        def on_subscriber_connect(client, userdata, flags, reason_code, properties):
+            client.subscribe("bricksortingmachine/classification/status", qos=1)
+
+        subscriber.on_connect = on_subscriber_connect
         subscriber.connect(self.broker_host, self.broker_port)
-        subscriber.subscribe("bricksortingmachine/classification/status", qos=1)
         subscriber.loop_start()
         time.sleep(0.1)
 

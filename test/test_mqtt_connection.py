@@ -1,4 +1,5 @@
 import logging
+import threading
 import time
 
 import paho.mqtt.client as mqtt
@@ -54,11 +55,14 @@ class TestMyServiceCommunication(test_mqtt_base.MqttTestCase):
         Minimal Last Will and Testament Test
         """
         received_message = None
+        offline_msg_received = threading.Event()
 
         def on_message(client, userdata, msg):
             nonlocal received_message
             received_message = msg.payload.decode()
             logging.info(f"MQTT message received: {received_message}")
+            if received_message == "offline":
+                offline_msg_received.set()
 
         def on_mqtt_connect(client, userdata, flags, reason_code, properties):
             if reason_code.is_failure:
@@ -100,7 +104,11 @@ class TestMyServiceCommunication(test_mqtt_base.MqttTestCase):
         logging.info("Forcfull cut-off connection ...")
         publisher._sock.close()
 
-        time.sleep(0.5)  # Give time for message to be processed
+        # wait for last will message "offline"
+        self.assertTrue(
+            offline_msg_received.wait(timeout=5),
+            "Timeout while waiting 5s on last will message",
+        )
 
         publisher.loop_stop()
         publisher.disconnect()

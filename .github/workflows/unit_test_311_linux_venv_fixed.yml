@@ -64,6 +64,3 @@ jobs:
         auth: ${{ secrets.GIST_TOKEN_SECRET }}
         gistID: 73e31dd0b213908488aa6c4eb07aa92b
         filename: coverage-badge.svg
-        label: Hello
-        message: World
-        color: orange

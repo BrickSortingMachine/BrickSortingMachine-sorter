@@ -20,3 +20,5 @@ serial
 paho-mqtt
 amqtt
 coverage
+genbadge
+defusedxml

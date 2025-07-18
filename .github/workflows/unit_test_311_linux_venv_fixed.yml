@@ -48,7 +48,7 @@ jobs:
         coverage report -m
         coverage html
         coverage xml
-        genbadge coverage -i .\coverage.xml
+        genbadge coverage -i coverage.xml
     - name: Create coverage comment
       uses: py-cov-action/python-coverage-comment-action@v3
       with:

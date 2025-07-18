@@ -2,6 +2,10 @@ name: Unit Test VEnv Fixed
 
 on: [push]
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   build-linux:
     runs-on: ubuntu-latest
@@ -37,7 +41,19 @@ jobs:
       run: |
         # uses .flake8 config
         flake8 . --count --show-source --statistics
-
-    - name: Test with unittest
+    - name: Test with unittest and collect coverage
       run: |
-        python -m unittest discover -s ./test  -p 'test_*.py' --failfast --buffer
+        coverage run -m unittest discover -s ./test  -p 'test_*.py' --failfast --buffer
+    - name: Generate coverage report
+      run: |
+        coverage report -m
+        coverage html
+    - name: Create coverage comment
+      uses: py-cov-action/python-coverage-comment-action@v3
+      with:
+        GITHUB_TOKEN: ${{ github.token }}
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report
+        path: htmlcov

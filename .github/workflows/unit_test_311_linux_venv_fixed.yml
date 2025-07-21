@@ -70,6 +70,9 @@ jobs:
         cp coverage-badge.svg 73e31dd0b213908488aa6c4eb07aa92b
         pushd .
         cd 73e31dd0b213908488aa6c4eb07aa92b
+        cd .git
+        cat config
+        cd ..
         git config user.name "BrickSortingMachine"
         git config user.email "BrickSortingMachine@gmail.com"
         git add coverage-badge.svg
@@ -78,4 +81,3 @@ jobs:
         popd
         cwd
 
-        

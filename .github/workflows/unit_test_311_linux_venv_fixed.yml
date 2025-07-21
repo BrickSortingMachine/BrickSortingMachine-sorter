@@ -64,20 +64,36 @@ jobs:
     #     auth: ${{ secrets.GIST_TOKEN_SECRET }}
     #     gistID: 73e31dd0b213908488aa6c4eb07aa92b
     #     filename: coverage-badge.svg
-    - name: Upload Badge to Gist
+    # - name: Upload Badge to Gist
+    #   run: |
+    #     git clone https://${{ secrets.GIST_TOKEN_SECRET }}@gist.github.com/73e31dd0b213908488aa6c4eb07aa92b.git
+    #     cp coverage-badge.svg 73e31dd0b213908488aa6c4eb07aa92b
+    #     pushd .
+    #     cd 73e31dd0b213908488aa6c4eb07aa92b
+    #     cd .git
+    #     cat config
+    #     cd ..
+    #     git config user.name "BrickSortingMachine"
+    #     git config user.email "BrickSortingMachine@gmail.com"
+    #     git add coverage-badge.svg
+    #     git commit -m "new badge"
+    #     git push
+    #     popd
+    #     cwd
+    - name: Update Gist with Coverage Badge
+      # Use the shell environment to pass secrets and variables securely
+      env:
+        GIST_PAT: ${{ secrets.GIST_TOKEN_SECRET }}
+        GIST_ID: "73e31dd0b213908488aa6c4eb07aa92b" # Your Gist ID
+        FILENAME: "coverage-badge.svg"
       run: |
-        git clone https://${{ secrets.GIST_TOKEN_SECRET }}@gist.github.com/73e31dd0b213908488aa6c4eb07aa92b.git
-        cp coverage-badge.svg 73e31dd0b213908488aa6c4eb07aa92b
-        pushd .
-        cd 73e31dd0b213908488aa6c4eb07aa92b
-        cd .git
-        cat config
-        cd ..
-        git config user.name "BrickSortingMachine"
-        git config user.email "BrickSortingMachine@gmail.com"
-        git add coverage-badge.svg
-        git commit -m "new badge"
-        git push
-        popd
-        cwd
+        jq -n --arg content "$(cat $FILENAME)" \
+          '{"files":{"'"$FILENAME"'":{"content": $content}}}' | \
+        curl -L \
+          -X PATCH \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer $GIST_PAT" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          https://api.github.com/gists/$GIST_ID \
+          --data-binary @-
 

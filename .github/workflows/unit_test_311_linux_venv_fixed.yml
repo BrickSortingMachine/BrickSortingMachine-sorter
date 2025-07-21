@@ -81,10 +81,9 @@ jobs:
     #     popd
     #     cwd
     - name: Update Gist with Coverage Badge
-      # Use the shell environment to pass secrets and variables securely
       env:
         GIST_PAT: ${{ secrets.GIST_TOKEN_SECRET }}
-        GIST_ID: "73e31dd0b213908488aa6c4eb07aa92b" # Your Gist ID
+        GIST_ID: "73e31dd0b213908488aa6c4eb07aa92b"
         FILENAME: "coverage-badge.svg"
       run: |
         jq -n --arg content "$(cat $FILENAME)" \

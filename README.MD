@@ -12,6 +12,7 @@ This project is heavily inspired by numerous preceding LEGO® sorting machines, 
 or [YouTube channel](https://www.youtube.com/@BrickSortingMachine).
 
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/BrickSortingMachine/BrickSortingMachine-sorter/.github/workflows/UnitTest.yml?branch=main&logo=github)](https://github.com/BrickSortingMachine/BrickSortingMachine-sorter/actions)
+![Test Statement Coverage](https://gist.githubusercontent.com/BrickSortingMachine/73e31dd0b213908488aa6c4eb07aa92b/raw/8eb6cd341ddd4a77834bb1e51dd76659676dad30/coverage-badge.svg)
 [![GitHub release](https://img.shields.io/github/v/release/BrickSortingMachine/BrickSortingMachine-sorter)](https://github.com/BrickSortingMachine/BrickSortingMachine-sorter/releases)
 [![GitHub](https://img.shields.io/badge/license-GPLv3-blue)](https://github.com/BrickSortingMachine/BrickSortingMachine-sorter/blob/main/LICENSE)
 [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1)](https://pycqa.github.io/isort/)

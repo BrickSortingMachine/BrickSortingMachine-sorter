@@ -92,25 +92,36 @@ class ClassificationService:
             mqtt.CallbackAPIVersion.VERSION2, client_id="ClassificationService"
         )
         self.mqtt_client.on_connect = self.on_mqtt_connect
+        self.mqtt_client.on_message = self.on_mqtt_message
         self.mqtt_client.will_set(
             "bricksortingmachine/classification/status", "offline", 1, True
         )
         self.mqtt_client.connect(host, port)
         self.mqtt_client.loop_start()
 
-    def on_mqtt_connect(self, client, userdata, flags, reason_code, properties):
+    def on_mqtt_connect(
+        self, client: mqtt.Client, userdata, flags, reason_code, properties
+    ):
         if reason_code.is_failure:
             logging.error(
                 f"Failed to connect to MQTT broker: {reason_code}. Will retry."
             )
         else:
+            # subscribe
+            client.subscribe("bricksortingmachine/classification/request", qos=2)
+
             # publish online message
-            self.mqtt_client.publish(
+            client.publish(
                 topic="bricksortingmachine/classification/status",
                 payload="online",
                 qos=1,
                 retain=True,
             )
+
+    def on_mqtt_message(self, client, userdata, msg: mqtt.MQTTMessage):
+        if msg.topic == "bricksortingmachine/classification/request":
+            payload = json.loads(msg.payload.decode())
+            logging.info(f"Received MQTT Classification Request: {payload}")
 
     def stop(self) -> None:
         # publish offline message

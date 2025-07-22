@@ -71,7 +71,7 @@ class TestMyServiceCommunication(test_mqtt_base.MqttTestCase):
                 )
             else:
                 # publish online message
-                publisher.publish(
+                client.publish(
                     topic="bricksortingmachine/classification/status",
                     payload="online",
                     qos=1,
@@ -83,9 +83,14 @@ class TestMyServiceCommunication(test_mqtt_base.MqttTestCase):
             mqtt.CallbackAPIVersion.VERSION2,
         )
         subscriber.on_message = on_message
+
+        def subscriber_on_connect(client, userdata, flags, reason_code, properties):
+            if not reason_code.is_failure:
+                client.subscribe("bricksortingmachine/classification/status")
+
+        subscriber.on_connect = subscriber_on_connect
         subscriber.connect(self.broker_host, self.broker_port)
         subscriber.loop_start()
-        subscriber.subscribe("bricksortingmachine/classification/status")
 
         # Publish a message
         publisher = mqtt.Client(

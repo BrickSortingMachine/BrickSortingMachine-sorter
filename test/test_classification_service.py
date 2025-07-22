@@ -41,7 +41,13 @@ class DummyCommandHandler(sorter.network.tcp_server.RequestHandler):
 
 
 class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTest):
-    def test_general(self):
+    def test_general_std(self):
+        self.main_test_general(enable_mqtt=False)
+
+    def test_general_mqtt(self):
+        self.main_test_general(enable_mqtt=True)
+
+    def main_test_general(self, enable_mqtt):
         """
         General
         """
@@ -57,7 +63,7 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
             port=self.broker_port,
             enable_cnn=False,
             model_fp="models/moved_crop_centrally.h5",
-            enable_mqtt=False,
+            enable_mqtt=enable_mqtt,
         )
         time.sleep(1)
 
@@ -68,18 +74,38 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
                 "Test data is not available - run tools/download_unpack_test_data.py"
             )
 
-        publisher = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
-        publisher.connect(self.broker_host, self.broker_port)
-        publisher.loop_start()
+        mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+
+        def mqtt_on_connect(client, userdata, flags, reason_code, properties):
+            if reason_code.is_failure:
+                raise Exception(
+                    f"Failed to connect to MQTT broker: {reason_code}. Will retry."
+                )
+            else:
+                client.subscribe("bricksortingmachine/classification/result", qos=1)
+
+        mqtt_last_classification_result = None
+
+        def mqtt_on_message(client, userdata, msg):
+            nonlocal mqtt_last_classification_result
+            payload = json.loads(msg.payload.decode())
+            logging.info(f"MQTT message received: {msg.topic} {payload}")
+            if msg.topic == "bricksortingmachine/classification/result":
+                mqtt_last_classification_result = payload
+
+        mqtt_client.on_connect = mqtt_on_connect
+        mqtt_client.on_message = mqtt_on_message
+        mqtt_client.connect(self.broker_host, self.broker_port)
+        mqtt_client.loop_start()
 
         for i in range(1):
             # send classification request
             s.broadcast(b"CLF 5 " + bytes(str(path), "utf-8"))
             payload = {
-                "object_id": 5,
+                "object_id": i,
                 "image_path": str(path),
             }
-            publisher.publish(
+            mqtt_client.publish(
                 "bricksortingmachine/classification/request",
                 json.dumps(payload),
                 qos=2,
@@ -88,14 +114,23 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
             time.sleep(
                 1.5
             )  # classification waits 1s artificially before sending result
-            self.assertEqual(
-                "plate1x", s.get_handler_list()[0].last_classification_result
-            )
+
+            if not enable_mqtt:
+                self.assertEqual(
+                    "plate1x", s.get_handler_list()[0].last_classification_result
+                )
+            else:
+                self.assertIsNotNone(mqtt_last_classification_result)
+                self.assertEqual(
+                    "plate1x", mqtt_last_classification_result["predicted_class"]
+                )
+                self.assertEqual(i, mqtt_last_classification_result["object_id"])
+                mqtt_last_classification_result = None
 
         # stop network
         time.sleep(1)
-        publisher.loop_stop()
-        publisher.disconnect()
+        mqtt_client.loop_stop()
+        mqtt_client.disconnect()
         cs.stop()
         s.stop()
         time.sleep(0.5)

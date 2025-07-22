@@ -125,7 +125,12 @@ class ClassificationService:
     def on_mqtt_message(self, client, userdata, msg: mqtt.MQTTMessage):
         if msg.topic == "bricksortingmachine/classification/request":
             payload = json.loads(msg.payload.decode())
-            logging.info(f"Received MQTT Classification Request: {payload}")
+            object_id = payload["object_id"]
+            filepath = payload["image_path"]
+            logging.info(
+                f"Received MQTT classification request - id: {object_id} fp: {filepath}"
+            )
+            self.add_queue(object_id, filepath)
 
     def stop(self) -> None:
         # publish offline message
@@ -252,7 +257,7 @@ class ClassificationService:
             )
 
         # send result to vision
-        msg = self.compose_classification_result_message(
+        msg, msg_mqtt = self.compose_classification_result_message(
             queue_item.object_id,
             predicted_class,
             probability,
@@ -262,7 +267,13 @@ class ClassificationService:
             cr.high_list[:3],
         )
         logging.info(msg)
-        self.tcp_client.send_msg(msg)
+        # TODO: Remove when mqtt move is complete
+        if not self.enable_mqtt:
+            self.tcp_client.send_msg(msg)
+        else:
+            self.mqtt_client.publish(
+                "bricksortingmachine/classification/result", json.dumps(msg_mqtt), qos=1
+            )
 
         # send notification
         self.notification_client.notify_classification_result(predicted_class)
@@ -277,10 +288,21 @@ class ClassificationService:
         low_list,
         high_list,
     ):
+        # TODO: Remove separate handling of low and hight classification results
         pred_low_serialized = ClassificationService.serialize(low_list)
         pred_high_serialized = ClassificationService.serialize(high_list)
+        # TODO: Remove when mqtt move is complete
         msg = f"CLR {object_id:d} {predicted_class} {probability} {uniqueness} {average_process_time_sec} {pred_low_serialized} {pred_high_serialized}"
-        return bytes(msg, "utf-8")
+        msg_mqtt = {
+            "object_id": object_id,
+            "predicted_class": predicted_class,
+            "probability": probability,
+            "uniqueness": uniqueness,
+            "average_process_time_sec": average_process_time_sec,
+            "prediction_low": low_list,
+            "prediction_hight": high_list,
+        }
+        return bytes(msg, "utf-8"), msg_mqtt
 
     @staticmethod
     def serialize(d) -> str:

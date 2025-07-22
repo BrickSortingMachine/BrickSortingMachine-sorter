@@ -57,6 +57,7 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
             port=self.broker_port,
             enable_cnn=False,
             model_fp="models/moved_crop_centrally.h5",
+            enable_mqtt=False,
         )
         time.sleep(1)
 

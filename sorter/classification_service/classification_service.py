@@ -49,9 +49,10 @@ class CSTcpClient(sorter.network.tcp_client.TcpClient):
 
 
 class ClassificationService:
-    def __init__(self, host, port, enable_cnn, model_fp) -> None:
+    def __init__(self, host, port, enable_cnn, model_fp, enable_mqtt=False) -> None:
         # classifier
         self.enable_cnn = enable_cnn
+        self.enable_mqtt = enable_mqtt
         if self.enable_cnn:
             import sorter.classification_service.classifier
 
@@ -73,16 +74,19 @@ class ClassificationService:
         self.thread.name = "Classification Service"
 
         # network thread
-        self.tcp_client = CSTcpClient(
-            host,
-            5005,
-            "ClassificationService",
-            "ClassificationService",
-            retry_connection=True,
-            auto_reconnect=True,
-            classification_service=self,
-        )
-        self.tcp_client.start()
+        if not enable_mqtt:
+            self.tcp_client = CSTcpClient(
+                host,
+                5005,
+                "ClassificationService",
+                "ClassificationService",
+                retry_connection=True,
+                auto_reconnect=True,
+                classification_service=self,
+            )
+            self.tcp_client.start()
+        else:
+            self.tcp_client = None
 
         # notification
         self.notification_client = nc.NotificationClient(self.tcp_client)
@@ -137,7 +141,8 @@ class ClassificationService:
         self.mqtt_client.disconnect()
 
         # network thread
-        self.tcp_client.stop()
+        if self.tcp_client is not None:
+            self.tcp_client.stop()
 
         # classification thread
         self.thread_stop_requested = True

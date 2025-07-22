@@ -74,14 +74,13 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         for i in range(1):
             # send classification request
             s.broadcast(b"CLF 5 " + bytes(str(path), "utf-8"))
+            payload = {
+                "object_id": 5,
+                "image_path": str(path),
+            }
             publisher.publish(
                 "bricksortingmachine/classification/request",
-                json.dumps(
-                    {
-                        "object_id": 5,
-                        "image_path": str(path),
-                    }
-                ),
+                json.dumps(payload),
                 qos=2,
             )
 

@@ -20,7 +20,7 @@ or [YouTube channel](https://www.youtube.com/@BrickSortingMachine).
 
 ## Important Security Note
 
-This software does not do any validation, sanitization or authentication on the network communication. For example in MQTT mode, it fully trusts the broker to not have any malicious intend. As a result, do not connect this software to a broker or network which you do not fully trust / have under full control. Especially do not connect it to any public MQTT broker. A malicious client connected to the same broker can exploit security vulnerabilities. If this message is not clear please do not use this software.
+This software does not do any validation, sanitization or authentication on the network communication. For example in MQTT mode, it fully trusts the broker and all other connected clients to not have any malicious intend. As a result, do not connect this software to a broker or network which you do not fully trust / have under full control. Especially do not connect it to any public MQTT broker. A malicious client connected to the same broker can exploit security vulnerabilities. If this message is not clear please do not use this software.
 
 ## Getting Started
 

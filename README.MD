@@ -18,6 +18,10 @@ or [YouTube channel](https://www.youtube.com/@BrickSortingMachine).
 [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1)](https://pycqa.github.io/isort/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-black)](https://github.com/psf/black)
 
+## Important Security Note
+
+This software does not do any validation, sanitization or authentication on the network communication. For example in MQTT mode, it fully trusts the broker to not have any malicious intend. As a result, do not connect this software to a broker or network which you do not fully trust / have under full control. Especially do not connect it to any public MQTT broker. A malicious client connected to the same broker can exploit security vulnerabilities. If this message is not clear please do not use this software.
+
 ## Getting Started
 
 If you want to build a LEGO® sorting machine yourself, I suggest to start with the [DIY build instructions](https://github.com/BrickSortingMachine). This repository maintains the sources to operate the LEGO® sorting machine. If you want to work on the machine learning components, the training scripts for the part classifier are maintained [here](https://github.com/BrickSortingMachine/BrickSortingMachine-training).

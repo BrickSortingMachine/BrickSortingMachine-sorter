@@ -92,16 +92,17 @@ class ClassificationService:
         self.notification_client = nc.NotificationClient(self.tcp_client)
 
         # mqtt
-        self.mqtt_client = mqtt.Client(
-            mqtt.CallbackAPIVersion.VERSION2, client_id="ClassificationService"
-        )
-        self.mqtt_client.on_connect = self.on_mqtt_connect
-        self.mqtt_client.on_message = self.on_mqtt_message
-        self.mqtt_client.will_set(
-            "bricksortingmachine/classification/status", "offline", 1, True
-        )
-        self.mqtt_client.connect(host, port)
-        self.mqtt_client.loop_start()
+        if self.enable_mqtt:
+            self.mqtt_client = mqtt.Client(
+                mqtt.CallbackAPIVersion.VERSION2, client_id="ClassificationService"
+            )
+            self.mqtt_client.on_connect = self.on_mqtt_connect
+            self.mqtt_client.on_message = self.on_mqtt_message
+            self.mqtt_client.will_set(
+                "bricksortingmachine/classification/status", "offline", 1, True
+            )
+            self.mqtt_client.connect(host, port)
+            self.mqtt_client.loop_start()
 
     def on_mqtt_connect(
         self, client: mqtt.Client, userdata, flags, reason_code, properties
@@ -111,6 +112,7 @@ class ClassificationService:
                 f"Failed to connect to MQTT broker: {reason_code}. Will retry."
             )
         else:
+            logging.info("MQTT connected successfully to broker")
             # subscribe
             client.subscribe("bricksortingmachine/classification/request", qos=2)
 
@@ -124,26 +126,34 @@ class ClassificationService:
 
     def on_mqtt_message(self, client, userdata, msg: mqtt.MQTTMessage):
         if msg.topic == "bricksortingmachine/classification/request":
-            payload = json.loads(msg.payload.decode())
-            object_id = payload["object_id"]
-            filepath = payload["image_path"]
-            logging.info(
-                f"Received MQTT classification request - id: {object_id} fp: {filepath}"
-            )
-            self.add_queue(object_id, filepath)
+            valid_request = False
+            try:
+                payload = json.loads(msg.payload.decode())
+                object_id = payload["object_id"]
+                filepath = payload["image_path"]
+                valid_request = True
+            except Exception:
+                logging.error(
+                    f"Received unexpected mqtt payload for topic 'bricksortingmachine/classification/request': {msg.payload.decode()}"
+                )
+
+            if valid_request:
+                logging.info(
+                    f"Received MQTT classification request - id: {object_id} fp: {filepath}"
+                )
+                self.add_queue(object_id, filepath)
 
     def stop(self) -> None:
-        # publish offline message
-        self.mqtt_client.publish(
-            topic="bricksortingmachine/classification/status",
-            payload="offline",
-            qos=1,
-            retain=True,
-        )
-
-        # mqtt
-        self.mqtt_client.loop_stop()
-        self.mqtt_client.disconnect()
+        if self.enable_mqtt:
+            # publish offline message
+            self.mqtt_client.publish(
+                topic="bricksortingmachine/classification/status",
+                payload="offline",
+                qos=1,
+                retain=True,
+            )
+            self.mqtt_client.loop_stop()
+            self.mqtt_client.disconnect()
 
         # network thread
         if self.tcp_client is not None:

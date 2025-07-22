@@ -82,6 +82,7 @@ def run_classification(args, sub_parser):
         args.port,
         model_fp=pathlib.Path(args.model),
         enable_cnn=not args.disable_cnn,
+        enable_mqtt=args.enable_mqtt,
     )
 
     time.sleep(0.5)
@@ -194,6 +195,12 @@ if __name__ == "__main__":
         "--disable_cnn",
         required=False,
         help="Disable CNN (dummy results)",
+        action="store_true",
+    )
+    classification_parser.add_argument(
+        "--enable_mqtt",
+        required=False,
+        help="Enable MQTT communication mode",
         action="store_true",
     )
 

@@ -187,14 +187,6 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
             "Subscriber not connected successfully",
         )
 
-        # TODO: Remove TCP server since this test is focusing on mqtt
-        # Dummy TCP server that the service needs
-        tcp_server = sorter.network.tcp_server.TcpServer(
-            "0.0.0.0", 5005, DummyCommandHandler
-        )
-        tcp_server.start()
-        time.sleep(0.1)
-
         # Instantiate the service, which should publish "online"
         cs = sorter.classification_service.classification_service.ClassificationService(
             host=self.broker_host,
@@ -253,9 +245,6 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         subscriber.loop_stop()
         subscriber.disconnect()
         cs.stop()
-        time.sleep(1)  # Allow time for cs thread to stop
-        tcp_server.stop()
-        time.sleep(0.5)  # Allow time for threads to stop
 
     def test_status_last_will_ungraceful_disconnect(self):
         """
@@ -285,14 +274,6 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         subscriber.on_connect = on_subscriber_connect
         subscriber.connect(self.broker_host, self.broker_port)
         subscriber.loop_start()
-        time.sleep(0.1)
-
-        # TODO: Remove TCP server since this test is focusing on mqtt
-        # TCP server
-        tcp_server = sorter.network.tcp_server.TcpServer(
-            "0.0.0.0", 5005, DummyCommandHandler
-        )
-        tcp_server.start()
         time.sleep(0.1)
 
         # Instantiate the service, which should publish "online"
@@ -326,8 +307,6 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         subscriber.loop_stop()
         subscriber.disconnect()
         cs.stop()
-        tcp_server.stop()
-        time.sleep(1)
 
     def test_mqtt_status_normal_disconnect(self):
         """
@@ -359,14 +338,6 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         subscriber.loop_start()
         time.sleep(0.1)
 
-        # TODO: Remove TCP server since this test is focusing on mqtt
-        # TCP server
-        tcp_server = sorter.network.tcp_server.TcpServer(
-            "0.0.0.0", 5005, DummyCommandHandler
-        )
-        tcp_server.start()
-        time.sleep(0.1)
-
         # Instantiate the service, which should publish "online"
         cs = sorter.classification_service.classification_service.ClassificationService(
             host="127.0.0.1",
@@ -376,6 +347,8 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
             enable_mqtt=True,
         )
         time.sleep(0.5)  # Give time for the "online" message to be sent
+
+        # TODO: Check "online" message was recived
 
         # Normal disconnect
         logging.info("Normal disconnect ...")
@@ -397,5 +370,3 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         # Cleanup
         subscriber.loop_stop()
         subscriber.disconnect()
-        tcp_server.stop()
-        time.sleep(1)

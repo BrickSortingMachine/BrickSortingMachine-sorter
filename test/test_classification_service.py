@@ -401,4 +401,21 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
             exception_triggered, "Sanitization did not detect input problem"
         )
 
+        # path not ending in png
+        exception_triggered = False
+        s = '{"object_id": 4, "image_path": "data/test.jpg"}'
+        try:
+            sorter.network.mqtt_interface.sanitize_classification_request(s)
+        except pydantic.ValidationError as ve:
+            if "String should match pattern" in str(ve):
+                exception_triggered = True
+                logging.info(str(ve))
+        self.assertTrue(
+            exception_triggered, "Sanitization did not detect input problem"
+        )
+
+        # test for false-positive
+        s = '{"object_id": 4, "image_path": "data/test.png"}'
+        sorter.network.mqtt_interface.sanitize_classification_request(s)
+
         self.assertTrue(True)

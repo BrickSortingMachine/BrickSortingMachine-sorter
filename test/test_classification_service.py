@@ -53,10 +53,13 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         """
         self.setup_logging()
 
-        # dummy server
-        s = sorter.network.tcp_server.TcpServer("0.0.0.0", 5005, DummyCommandHandler)
-        s.start()
-        time.sleep(1)
+        # TCP Server
+        if not enable_mqtt:
+            s = sorter.network.tcp_server.TcpServer(
+                "0.0.0.0", 5005, DummyCommandHandler
+            )
+            s.start()
+            time.sleep(1)
 
         cs = sorter.classification_service.classification_service.ClassificationService(
             host="127.0.0.1",
@@ -100,20 +103,21 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
 
         for i in range(1):
             # send classification request
-            s.broadcast(b"CLF 5 " + bytes(str(path), "utf-8"))
-            payload = {
-                "object_id": i,
-                "image_path": str(path),
-            }
-            mqtt_client.publish(
-                "bricksortingmachine/classification/request",
-                json.dumps(payload),
-                qos=2,
-            )
+            if not enable_mqtt:
+                s.broadcast(b"CLF 5 " + bytes(str(path), "utf-8"))
+            else:
+                payload = {
+                    "object_id": i,
+                    "image_path": str(path),
+                }
+                mqtt_client.publish(
+                    "bricksortingmachine/classification/request",
+                    json.dumps(payload),
+                    qos=2,
+                )
 
-            time.sleep(
-                1.5
-            )  # classification waits 1s artificially before sending result
+            # classification waits 1s artificially before sending result
+            time.sleep(1.5)
 
             if not enable_mqtt:
                 self.assertEqual(
@@ -132,7 +136,8 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         mqtt_client.loop_stop()
         mqtt_client.disconnect()
         cs.stop()
-        s.stop()
+        if not enable_mqtt:
+            s.stop()
         time.sleep(0.5)
 
     def test_mqtt_status(self):

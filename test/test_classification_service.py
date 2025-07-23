@@ -322,7 +322,8 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         self.setup_logging()
 
         # Use a threading Event to signal when the message is received
-        message_received_event = threading.Event()
+        message_offline_received_event = threading.Event()
+        message_online_received_event = threading.Event()
         received_message = None
 
         def on_message(client, userdata, msg):
@@ -331,7 +332,10 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
             # We are expecting two messages: "online" and then "offline"
             if msg.payload == b"offline":
                 received_message = msg
-                message_received_event.set()
+                message_offline_received_event.set()
+            if msg.payload == b"online":
+                received_message = msg
+                message_online_received_event.set()
 
         # Subscriber to listen for the status message
         subscriber = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
@@ -353,18 +357,21 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
             model_fp="models/moved_crop_centrally.h5",
             enable_mqtt=True,
         )
-        time.sleep(0.5)  # Give time for the "online" message to be sent
 
-        # TODO: Check "online" message was recived
+        # wait "online" msg
+        self.assertTrue(
+            message_online_received_event.wait(timeout=2),
+            'Did not receive "online" message in time',
+        )
 
         # Normal disconnect
         logging.info("Normal disconnect ...")
         cs.stop()
 
-        # Wait for the LWT "offline" message to be received
-        message_received = message_received_event.wait(timeout=2)
+        # wait "offline" msg
+        message_received = message_offline_received_event.wait(timeout=2)
         self.assertTrue(
-            message_received, "Did not receive LWT 'offline' message in time."
+            message_received, 'Did not receive LWT "offline" message in time'
         )
 
         # Assert the "offline" message content

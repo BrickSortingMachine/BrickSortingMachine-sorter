@@ -8,9 +8,11 @@ import time
 from dataclasses import dataclass
 
 import paho.mqtt.client as mqtt
+import pydantic
 
 import sorter.classification_service.classification_result
 import sorter.classification_service.config
+import sorter.network.mqtt_interface
 import sorter.network.tcp_client
 import sorter.notification_service.notification_client as nc
 
@@ -126,22 +128,26 @@ class ClassificationService:
 
     def on_mqtt_message(self, client, userdata, msg: mqtt.MQTTMessage):
         if msg.topic == "bricksortingmachine/classification/request":
-            valid_request = False
+            request_valid = False
             try:
-                payload = json.loads(msg.payload.decode())
-                object_id = payload["object_id"]
-                filepath = payload["image_path"]
-                valid_request = True
-            except Exception:
+                payload = sorter.network.mqtt_interface.sanitize_classification_request(
+                    msg.payload.decode()
+                )
+                object_id = payload.object_id
+                image_path_str = payload.image_path
+                request_valid = True
+
+            except (pydantic.ValidationError, Exception) as e:
                 logging.error(
                     f"Received unexpected mqtt payload for topic 'bricksortingmachine/classification/request': {msg.payload.decode()}"
                 )
+                logging.error(str(e))
 
-            if valid_request:
+            if request_valid:
                 logging.info(
-                    f"Received MQTT classification request - id: {object_id} fp: {filepath}"
+                    f"Received MQTT classification request - id: {object_id} path: {image_path_str}"
                 )
-                self.add_queue(object_id, filepath)
+                self.add_queue(object_id, image_path_str)
 
     def stop(self) -> None:
         if self.enable_mqtt:

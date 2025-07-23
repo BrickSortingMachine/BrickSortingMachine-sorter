@@ -86,6 +86,7 @@ Topics for the classification workflow.
       "image_path": "data/image.png"
     }
     ```
+    Notice: image_path must point to a .png/.jpg file which is a child of the sorter dir in the folder structure (e.g. data/).
 * **Retain**: `false`
 * **QoS**: 2
 

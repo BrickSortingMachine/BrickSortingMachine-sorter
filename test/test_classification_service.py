@@ -379,7 +379,7 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         subscriber.disconnect()
 
     def test_input_sanitization(self):
-        # test for false-negative
+        # no json
         exception_triggered = False
         try:
             sorter.network.mqtt_interface.sanitize_classification_request("foo")
@@ -390,7 +390,7 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
             exception_triggered, "Sanitization did not detect input problem"
         )
 
-        # test for false-negative
+        # empty json
         exception_triggered = False
         try:
             sorter.network.mqtt_interface.sanitize_classification_request("{}")
@@ -401,21 +401,48 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
             exception_triggered, "Sanitization did not detect input problem"
         )
 
-        # path not ending in png
+        # path not ending in png/jpg
         exception_triggered = False
-        s = '{"object_id": 4, "image_path": "data/test.jpg"}'
+        s = '{"object_id": 4, "image_path": "data/test.md"}'
         try:
             sorter.network.mqtt_interface.sanitize_classification_request(s)
         except pydantic.ValidationError as ve:
             if "String should match pattern" in str(ve):
                 exception_triggered = True
-                logging.info(str(ve))
         self.assertTrue(
             exception_triggered, "Sanitization did not detect input problem"
         )
 
-        # test for false-positive
+        # correct input
         s = '{"object_id": 4, "image_path": "data/test.png"}'
         sorter.network.mqtt_interface.sanitize_classification_request(s)
+
+        # file not child of sorter dir
+        for test_path in [
+            "../data/test.jpg",
+            "../test.jpg",
+            "../data/test.png",
+            "../test.png",
+            "data/../../test.png",
+            "..\\\\data\\\\test.jpg",
+            "..\\\\test.jpg",
+            "..\\\\data\\\\test.png",
+            "..\\\\test.png",
+            "data\\\\..\\\\..\\\\test.png",
+        ]:
+            exception_triggered = False
+            s = '{"object_id": 4, "image_path": "' + test_path + '"}'
+            logging.info(pathlib.Path(test_path).resolve())
+            try:
+                sorter.network.mqtt_interface.sanitize_classification_request(s)
+            except Exception as ve:
+                if "is not a child of sorter dir" in str(ve):
+                    exception_triggered = True
+                else:
+                    raise ve
+            self.assertTrue(
+                exception_triggered,
+                f'Sanitization did not detect input problem for "{test_path}"',
+            )
 
         self.assertTrue(True)

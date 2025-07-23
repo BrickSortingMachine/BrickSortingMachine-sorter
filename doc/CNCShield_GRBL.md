@@ -58,7 +58,7 @@ G0 X0 Y0
 G1 Z0 F50000
 
 
-## How to compile GRBL from source
+## GRBL - parametrize and compile for AS/RS
 * Base Version
     * Connect arduino multiple times until dmesg says connected to /dev/ttyUSB0
     * Set board mode to Arduino UNO

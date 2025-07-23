@@ -82,8 +82,8 @@ Topics for the classification workflow.
 * **Payload (JSON)**:
     ```json
     {
-      "object_id": "obj_1719875432_abc",
-      "image_path": "/path/to/detected/image.jpg"
+      "object_id": 5,
+      "image_path": "data/image.png"
     }
     ```
 * **Retain**: `false`

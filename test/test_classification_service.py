@@ -5,10 +5,12 @@ import threading
 import time
 
 import paho.mqtt.client as mqtt
+import pydantic
 import test_helpers
 import test_mqtt_base
 
 import sorter.classification_service.classification_service
+import sorter.network.mqtt_interface
 import sorter.network.tcp_server
 
 
@@ -375,3 +377,28 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         # Cleanup
         subscriber.loop_stop()
         subscriber.disconnect()
+
+    def test_input_sanitization(self):
+        # test for false-negative
+        exception_triggered = False
+        try:
+            sorter.network.mqtt_interface.sanitize_classification_request("foo")
+        except pydantic.ValidationError as ve:
+            if "Invalid JSON" in str(ve):
+                exception_triggered = True
+        self.assertTrue(
+            exception_triggered, "Sanitization did not detect input problem"
+        )
+
+        # test for false-negative
+        exception_triggered = False
+        try:
+            sorter.network.mqtt_interface.sanitize_classification_request("{}")
+        except pydantic.ValidationError as ve:
+            if "validation error" in str(ve):
+                exception_triggered = True
+        self.assertTrue(
+            exception_triggered, "Sanitization did not detect input problem"
+        )
+
+        self.assertTrue(True)

@@ -10,3 +10,4 @@ amqtt
 coverage
 genbadge
 defusedxml
+pydantic

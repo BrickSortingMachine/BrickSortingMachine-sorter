@@ -187,6 +187,7 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
             "Subscriber not connected successfully",
         )
 
+        # TODO: Remove TCP server since this test is focusing on mqtt
         # Dummy TCP server that the service needs
         tcp_server = sorter.network.tcp_server.TcpServer(
             "0.0.0.0", 5005, DummyCommandHandler
@@ -200,6 +201,7 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
             port=self.broker_port,
             enable_cnn=False,
             model_fp="models/moved_crop_centrally.h5",
+            enable_mqtt=True,
         )
 
         # Wait for the message to be received, with a timeout
@@ -285,6 +287,7 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         subscriber.loop_start()
         time.sleep(0.1)
 
+        # TODO: Remove TCP server since this test is focusing on mqtt
         # TCP server
         tcp_server = sorter.network.tcp_server.TcpServer(
             "0.0.0.0", 5005, DummyCommandHandler
@@ -298,6 +301,7 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
             port=self.broker_port,
             enable_cnn=False,
             model_fp="models/moved_crop_centrally.h5",
+            enable_mqtt=True,
         )
         time.sleep(0.5)  # Give time for the "online" message to be sent
 
@@ -355,6 +359,7 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         subscriber.loop_start()
         time.sleep(0.1)
 
+        # TODO: Remove TCP server since this test is focusing on mqtt
         # TCP server
         tcp_server = sorter.network.tcp_server.TcpServer(
             "0.0.0.0", 5005, DummyCommandHandler
@@ -368,6 +373,7 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
             port=self.broker_port,
             enable_cnn=False,
             model_fp="models/moved_crop_centrally.h5",
+            enable_mqtt=True,
         )
         time.sleep(0.5)  # Give time for the "online" message to be sent
 

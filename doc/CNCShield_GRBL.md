@@ -76,6 +76,16 @@ G1 Z0 F50000
     * Navigate to #include <grbl.h> -> F12 Go to definition
     * Navigate to #include <config.h> -> F12 go to definition
     * Find // #define COREXY // Default disabled. Uncomment to enable.
+    * Disable the default homing sequence by commenting the lines
+```
+#define HOMING_CYCLE_0 (1<<Z_AXIS)                // REQUIRED: First move Z to clear workspace.
+#define HOMING_CYCLE_1 ((1<<X_AXIS)|(1<<Y_AXIS))  // OPTIONAL: Then move X,Y at the same time.
+```
+and enable a COREXY compatible homing mode by uncommenting the lines
+```
+#define HOMING_CYCLE_0 (1<<X_AXIS)  // COREXY COMPATIBLE: First home X
+#define HOMING_CYCLE_1 (1<<Y_AXIS)  // COREXY COMPATIBLE: Then home Y
+```
     * Compile & Upload to Arduino
 
 * Enable Homing Force Set Origin to 0/0/0

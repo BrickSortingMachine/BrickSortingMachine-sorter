@@ -86,6 +86,7 @@ and enable a COREXY compatible homing mode by uncommenting the lines
 #define HOMING_CYCLE_0 (1<<X_AXIS)  // COREXY COMPATIBLE: First home X
 #define HOMING_CYCLE_1 (1<<Y_AXIS)  // COREXY COMPATIBLE: Then home Y
 ```
+    
     * Compile & Upload to Arduino
 
 * Enable Homing Force Set Origin to 0/0/0

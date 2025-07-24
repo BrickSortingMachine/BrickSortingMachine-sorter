@@ -18,7 +18,7 @@ or [YouTube channel](https://www.youtube.com/@BrickSortingMachine).
 [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1)](https://pycqa.github.io/isort/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-black)](https://github.com/psf/black)
 
-## ⚠️ Important Security Warning
+## Security Notice
 
 This software uses MQTT for network communication between its components. It's critical to understand that this communication is not secure by default. There is no authentication on messages received, meaning the system blindly trusts any client connected to the MQTT broker.
 A malicious client on the same broker can send commands that could potentially damage the machine, exploit your system, or harm your network. The security of the entire system depends on the security of your broker and network configuration.
@@ -26,6 +26,7 @@ To operate this software safely, you must adhere to the following rules:
  * Use a Private Network (if not using TLS): If your MQTT communication is not secured with transport layer encryption (TLS), you must run this software exclusively on a private, isolated network that you fully control.
  * No Public Brokers: Never connect to a public MQTT broker or any broker configuration that allows anonymous access.
  * Trusted Clients: Ensure that all third-party clients or other software modules connected to the same MQTT broker are fully trusted by you.
+
 If you're unsure what any of this means, we strongly advise against using this software.
 
 

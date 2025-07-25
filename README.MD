@@ -29,7 +29,6 @@ To operate this software safely, you must adhere to the following rules:
 
 If you're unsure what any of this means, we strongly advise against using this software.
 
-
 ## Getting Started
 
 If you want to build a LEGO® sorting machine yourself, I suggest to start with the [DIY build instructions](https://github.com/BrickSortingMachine). This repository maintains the sources to operate the LEGO® sorting machine. If you want to work on the machine learning components, the training scripts for the part classifier are maintained [here](https://github.com/BrickSortingMachine/BrickSortingMachine-training).

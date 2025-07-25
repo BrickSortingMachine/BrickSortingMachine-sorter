@@ -3,6 +3,9 @@
 __pycache__
 venv*
 .venv*
+.coverage
+coverage.xml
+coverage-badge.svg
 
 # codespaces
 build/*

@@ -7,8 +7,12 @@ import threading
 import time
 from dataclasses import dataclass
 
+import paho.mqtt.client as mqtt
+import pydantic
+
 import sorter.classification_service.classification_result
 import sorter.classification_service.config
+import sorter.network.mqtt_interface
 import sorter.network.tcp_client
 import sorter.notification_service.notification_client as nc
 
@@ -47,9 +51,10 @@ class CSTcpClient(sorter.network.tcp_client.TcpClient):
 
 
 class ClassificationService:
-    def __init__(self, host, enable_cnn, model_fp) -> None:
+    def __init__(self, host, port, enable_cnn, model_fp, enable_mqtt=False) -> None:
         # classifier
         self.enable_cnn = enable_cnn
+        self.enable_mqtt = enable_mqtt
         if self.enable_cnn:
             import sorter.classification_service.classifier
 
@@ -71,23 +76,94 @@ class ClassificationService:
         self.thread.name = "Classification Service"
 
         # network thread
-        self.tcp_client = CSTcpClient(
-            host,
-            5005,
-            "ClassificationService",
-            "ClassificationService",
-            retry_connection=True,
-            auto_reconnect=True,
-            classification_service=self,
-        )
-        self.tcp_client.start()
+        if not enable_mqtt:
+            self.tcp_client = CSTcpClient(
+                host,
+                5005,
+                "ClassificationService",
+                "ClassificationService",
+                retry_connection=True,
+                auto_reconnect=True,
+                classification_service=self,
+            )
+            self.tcp_client.start()
+        else:
+            self.tcp_client = None
 
         # notification
         self.notification_client = nc.NotificationClient(self.tcp_client)
 
+        # mqtt
+        if self.enable_mqtt:
+            self.mqtt_client = mqtt.Client(
+                mqtt.CallbackAPIVersion.VERSION2, client_id="ClassificationService"
+            )
+            self.mqtt_client.on_connect = self.on_mqtt_connect
+            self.mqtt_client.on_message = self.on_mqtt_message
+            self.mqtt_client.will_set(
+                "bricksortingmachine/classification/status", "offline", 1, True
+            )
+            self.mqtt_client.connect(host, port)
+            self.mqtt_client.loop_start()
+
+    def on_mqtt_connect(
+        self, client: mqtt.Client, userdata, flags, reason_code, properties
+    ):
+        if reason_code.is_failure:
+            logging.error(
+                f"Failed to connect to MQTT broker: {reason_code}. Will retry."
+            )
+        else:
+            logging.info("MQTT connected successfully to broker")
+            # subscribe
+            client.subscribe("bricksortingmachine/classification/request", qos=2)
+
+            # publish online message
+            client.publish(
+                topic="bricksortingmachine/classification/status",
+                payload="online",
+                qos=1,
+                retain=True,
+            )
+
+    def on_mqtt_message(self, client, userdata, msg: mqtt.MQTTMessage):
+        if msg.topic == "bricksortingmachine/classification/request":
+            request_valid = False
+            try:
+                payload = sorter.network.mqtt_interface.sanitize_classification_request(
+                    msg.payload.decode()
+                )
+                object_id = payload.object_id
+                image_path_str = payload.image_path
+                request_valid = True
+
+            except (pydantic.ValidationError, Exception) as e:
+                logging.error(
+                    f"Received unexpected mqtt payload for topic 'bricksortingmachine/classification/request': {msg.payload.decode()}"
+                )
+                logging.error(str(e))
+
+            if request_valid:
+                logging.info(
+                    f"Received MQTT classification request - id: {object_id} path: {image_path_str}"
+                )
+                self.add_queue(object_id, image_path_str)
+
     def stop(self) -> None:
+        if self.enable_mqtt:
+            # publish offline message
+            self.mqtt_client.publish(
+                topic="bricksortingmachine/classification/status",
+                payload="offline",
+                qos=1,
+                retain=True,
+            )
+            self.mqtt_client.loop_stop()
+            self.mqtt_client.disconnect()
+
         # network thread
-        self.tcp_client.stop()
+        if self.tcp_client is not None:
+            self.tcp_client.stop()
 
         # classification thread
         self.thread_stop_requested = True
@@ -119,8 +195,12 @@ class ClassificationService:
                 queue_item: QueueItem = self.queue.pop()
             else:
                 logging.info("Thread: Queue empty - going to wait ...")
-                self.queue_condition.wait()
-                logging.info("Thread: Woke up.")
+                try:
+                    self.queue_condition.wait()
+                    logging.info("Thread: Woke up.")
+                except Exception as e:
+                    logging.error(f"Exception while waiting for queue: {e}")
+                    self.thread_stop_requested = True
 
             self.queue_mutex.release()
 
@@ -193,7 +273,7 @@ class ClassificationService:
             )
 
         # send result to vision
-        msg = self.compose_classification_result_message(
+        msg, msg_mqtt = self.compose_classification_result_message(
             queue_item.object_id,
             predicted_class,
             probability,
@@ -203,7 +283,13 @@ class ClassificationService:
             cr.high_list[:3],
         )
         logging.info(msg)
-        self.tcp_client.send_msg(msg)
+        # TODO: Remove when mqtt move is complete
+        if not self.enable_mqtt:
+            self.tcp_client.send_msg(msg)
+        else:
+            self.mqtt_client.publish(
+                "bricksortingmachine/classification/result", json.dumps(msg_mqtt), qos=1
+            )
 
         # send notification
         self.notification_client.notify_classification_result(predicted_class)
@@ -218,10 +304,21 @@ class ClassificationService:
         low_list,
         high_list,
     ):
+        # TODO: Remove separate handling of low and hight classification results
         pred_low_serialized = ClassificationService.serialize(low_list)
         pred_high_serialized = ClassificationService.serialize(high_list)
+        # TODO: Remove when mqtt move is complete
         msg = f"CLR {object_id:d} {predicted_class} {probability} {uniqueness} {average_process_time_sec} {pred_low_serialized} {pred_high_serialized}"
-        return bytes(msg, "utf-8")
+        msg_mqtt = {
+            "object_id": object_id,
+            "predicted_class": predicted_class,
+            "probability": probability,
+            "uniqueness": uniqueness,
+            "average_process_time_sec": average_process_time_sec,
+            "prediction_low": low_list,
+            "prediction_hight": high_list,
+        }
+        return bytes(msg, "utf-8"), msg_mqtt
 
     @staticmethod
     def serialize(d) -> str:

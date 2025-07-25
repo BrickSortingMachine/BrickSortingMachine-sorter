@@ -1,5 +1,4 @@
 import time
-import unittest
 
 import test_helpers
 
@@ -7,7 +6,7 @@ import sorter.controller.machine_controller
 import sorter.network.tcp_client
 
 
-class MachineControllerTest(unittest.TestCase, test_helpers.BaseTest):
+class MachineControllerTest(test_helpers.BaseTest):
     def test_tcp_busy_command(self):
         """
         Full loop, incl. network

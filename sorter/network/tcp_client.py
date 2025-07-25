@@ -114,6 +114,9 @@ class TcpClient:
         """
         Create TCP client socket
         """
+        if self.stop_requested:
+            return
+
         # create socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 

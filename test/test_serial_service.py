@@ -1,6 +1,5 @@
 import logging
 import time
-import unittest
 
 import test_helpers
 
@@ -10,7 +9,7 @@ import sorter.serial_service.serical_connection_manager_mock
 import sorter.serial_service.slide_serial_connection_handler
 
 
-class SerialServiceTest(unittest.TestCase, test_helpers.BaseTest):
+class SerialServiceTest(test_helpers.BaseTest):
     def test_general(self):
         self.setup_logging()
         logging.info("## SerialServiceTest > test_general")

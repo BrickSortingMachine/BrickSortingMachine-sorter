@@ -1,12 +1,11 @@
 import time
-import unittest
 
 import test_helpers
 
 import sorter.serial_service.timeout_async
 
 
-class TimeoutAsyncTest(unittest.TestCase, test_helpers.BaseTest):
+class TimeoutAsyncTest(test_helpers.BaseTest):
     def test_general(self):
         self.setup_logging()
 

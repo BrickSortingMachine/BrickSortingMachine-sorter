@@ -1,6 +1,5 @@
 import logging
 import time
-import unittest
 
 import test_helpers
 
@@ -28,7 +27,7 @@ class ExampleCommandHandler(sorter.network.tcp_server.RequestHandler):
         self.request.sendall(b"DRV\n")
 
 
-class TestTcpServer(unittest.TestCase, test_helpers.BaseTest):
+class TestTcpServer(test_helpers.BaseTest):
     def test_minimal(self):
         self.setup_logging()
 

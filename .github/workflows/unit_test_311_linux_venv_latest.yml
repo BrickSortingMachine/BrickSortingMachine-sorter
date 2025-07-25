@@ -1,4 +1,4 @@
-name: Unit Test
+name: Unit Test VEnv Latest
 
 on: [push]
 
@@ -13,24 +13,31 @@ jobs:
     - uses: actions/checkout@v3
       with:
         lfs: 'false'
+
     - name: Set up Python 3.11
       uses: actions/setup-python@v3
       with:
         python-version: '3.11'
-    - name: Add conda to system path
-      run: |
-        # $CONDA is an environment variable pointing to the root of the miniconda directory
-        echo $CONDA/bin >> $GITHUB_PATH
+
     - name: Download test data
       run: |
         python tools/download_unpack_test_data.py
+
+    - name: Create virtual environment
+      run: |
+        python -m venv .venv
+        echo ".venv/bin" >> $GITHUB_PATH
+
     - name: Install dependencies
       run: |
-        conda env update --file environment311_linux_unittest.yml --name base
+        python -m pip install --upgrade pip
+        pip install -r requirements_311_linux_unittest_latest.txt
+
     - name: Lint with flake8
       run: |
         # uses .flake8 config
         flake8 . --count --show-source --statistics
+
     - name: Test with unittest
       run: |
         python -m unittest discover -s ./test  -p 'test_*.py' --failfast --buffer

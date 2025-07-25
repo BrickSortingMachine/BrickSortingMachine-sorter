@@ -1,13 +1,12 @@
 import logging
 import time
-import unittest
 
 import test_helpers
 
 import sorter.serial_service.serical_connection_manager_mock
 
 
-class SerialConnectionTest(unittest.TestCase, test_helpers.BaseTest):
+class SerialConnectionTest(test_helpers.BaseTest):
     def test_connection(self):
         self.setup_logging()
         logging.info("## SerialConnectionTest > test_general")

@@ -14,10 +14,7 @@ import sorter.util.file_hash
 
 file_list = [
     # currently deactivated until new test recordings are uploaded
-    # "rec_2022-04-21_12-42-15_752a5cff2028011843b4b39f7a33769cce617499.zip",
-    # "rec_2022-04-21_12-42-30_e97badf034f8bbf24bf6956dac6c405abc55d7be.zip",
-    # "rec_2022-04-21_12-53-11_5ad7341458687920d53e497dbd8184c6202e0abb.zip",
-    # "rec_2023-08-09_21-38-43_0f5ca2e91a5d6718f4a17a0d4b1346553439c350.zip",
+    "rec_2023-08-09_21-38-43_0f5ca2e91a5d6718f4a17a0d4b1346553439c350.zip",
 ]
 
 if __name__ == "__main__":
@@ -65,10 +62,7 @@ if __name__ == "__main__":
         logging.info(f"Package: {str(fn)}")
         if not file_path.exists():
             # download, file does not exist yet
-            url = (
-                "https://github.com/BrickSortingMachine/sorter/releases/download/BaseRelease/"
-                + fn
-            )
+            url = "https://data.bricksortingmachine.com/" + fn
 
             logging.info(f"Downloading {url} ...")
             urllib.request.urlretrieve(url, str(file_path))

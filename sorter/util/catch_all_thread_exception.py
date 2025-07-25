@@ -6,10 +6,9 @@ base_exceptionhook = None
 
 
 def overlay_exception_hook(args):
-    global exception_log
-
     # forward to standard handler
-    base_exceptionhook(args)
+    if base_exceptionhook:
+        base_exceptionhook(args)
 
     # traceback
     exception_msg = "\n".join(
@@ -33,11 +32,11 @@ def install():
 
 
 def collect_thread_exceptions():
-    global exception_log
     global base_exceptionhook
 
     # recover base exceptionhook
     threading.excepthook = base_exceptionhook
+    base_exceptionhook = None  # Clear the stored hook
 
     # forward exceptions in main thread
     if len(exception_log) > 0:

@@ -1,0 +1,76 @@
+name: Unit Test VEnv Fixed
+
+on: [push]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      max-parallel: 5
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        lfs: 'false'
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Download test data
+      run: |
+        python tools/download_unpack_test_data.py
+
+    - name: Create virtual environment
+      run: |
+        python -m venv .venv
+        echo ".venv/bin" >> $GITHUB_PATH
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements_311_linux_unittest_fixed.txt
+
+    - name: Lint with flake8
+      run: |
+        # uses .flake8 config
+        flake8 . --count --show-source --statistics
+    - name: Test with unittest and collect coverage
+      run: |
+        coverage run -m unittest discover -s ./test  -p 'test_*.py' --failfast --buffer
+    - name: Generate Coverage Report and Badge
+      run: |
+        coverage report -m
+        coverage html
+        coverage xml
+        genbadge coverage -i coverage.xml
+    - name: Create coverage comment
+      uses: py-cov-action/python-coverage-comment-action@v3
+      with:
+        GITHUB_TOKEN: ${{ github.token }}
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: htmlcov
+    - name: Upload Coverage Badge to Gist
+      env:
+        GIST_PAT: ${{ secrets.GIST_TOKEN_SECRET }}
+        GIST_ID: "73e31dd0b213908488aa6c4eb07aa92b"
+        FILENAME: "coverage-badge.svg"
+      run: |
+        jq -n --arg content "$(cat $FILENAME)" \
+          '{"files":{"'"$FILENAME"'":{"content": $content}}}' | \
+        curl -L \
+          -X PATCH \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer $GIST_PAT" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          https://api.github.com/gists/$GIST_ID \
+          --data-binary @-
+

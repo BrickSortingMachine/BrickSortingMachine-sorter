@@ -10,3 +10,9 @@ ignore = E203, E402, W503, E501
 # F403 = unable to detect undefined names
 max-line-length = 88
 select = B,C,E,F,W,T4,B9
+
+# exclude dirs
+exclude =
+    .git,
+    __pycache__,
+    .venv

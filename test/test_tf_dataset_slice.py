@@ -1,5 +1,4 @@
 import logging
-import unittest
 
 import test_helpers
 
@@ -22,7 +21,7 @@ if tensorflow_available:
         return tmp.take(count)
 
 
-class TFDatasetSlice(unittest.TestCase, test_helpers.BaseTest):
+class TFDatasetSlice(test_helpers.BaseTest):
     def test_general(self):
         self.setup_logging()
 

@@ -50,7 +50,7 @@ Adapt local config (currently no adaptions needed):
 ```
 cp config.json.example config.json
 ```
-**Work in Progress:** The network communication layer is currently ported to mqtt replacing the previous text based socket communication. As a prerequisite, a MQTT broker like [mosquitto](https://mosquitto.org/) neededs to be installed.
+**Work in Progress:** The network communication layer is currently ported to mqtt replacing the previous text based socket communication. As a prerequisite, a MQTT broker like [mosquitto](https://mosquitto.org/) needs to be installed.
 
 ## Usage
 Machine controller (on raspberry pi, connected to motor drivers):

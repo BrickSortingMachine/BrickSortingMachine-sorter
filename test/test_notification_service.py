@@ -1,3 +1,8 @@
+import sys
+from unittest import mock
+
+sys.modules["playsound"] = mock.MagicMock()
+
 import time
 
 import test_helpers

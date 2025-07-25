@@ -1,6 +1,7 @@
 import json
 import logging
 import pathlib
+import sys
 import threading
 import time
 
@@ -425,18 +426,22 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         sorter.network.mqtt_interface.sanitize_classification_request(s)
 
         # file not child of sorter dir
-        for test_path in [
+        test_path_list = [
             "../data/test.jpg",
             "../test.jpg",
             "../data/test.png",
             "../test.png",
             "data/../../test.png",
-            "..\\\\data\\\\test.jpg",
-            "..\\\\test.jpg",
-            "..\\\\data\\\\test.png",
-            "..\\\\test.png",
-            "data\\\\..\\\\..\\\\test.png",
-        ]:
+        ]
+        if sys.platform != "linux":
+            test_path_list += [
+                "..\\\\data\\\\test.jpg",
+                "..\\\\test.jpg",
+                "..\\\\data\\\\test.png",
+                "..\\\\test.png",
+                "data\\\\..\\\\..\\\\test.png",
+            ]
+        for test_path in test_path_list:
             exception_triggered = False
             s = '{"object_id": 4, "image_path": "' + test_path + '"}'
             logging.info(pathlib.Path(test_path).resolve())

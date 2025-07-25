@@ -2,7 +2,7 @@
 
 # Brick Sorting Machine
 
-A machine to automatically sort your LEGO® collection
+A modular software stack for fully automated LEGO® sorting machines.
 
 <img src="https://github.com/BrickSortingMachine/BrickSortingMachine-sorter/releases/download/v1.1.0/Overview.jpg" width="600" />
 

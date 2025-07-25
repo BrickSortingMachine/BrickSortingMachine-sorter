@@ -1,14 +1,9 @@
-import logging
-import socket
 import time
 
-test_enabled = socket.gethostname() == "LULD94MW"
-
-if test_enabled:
-    import sorter.notification_service.notification_service
-    import sorter.network.tcp_server
-
 import test_helpers
+
+import sorter.network.tcp_server
+import sorter.notification_service.notification_service
 
 
 class NotificationServiceTest(test_helpers.BaseTest):
@@ -17,12 +12,6 @@ class NotificationServiceTest(test_helpers.BaseTest):
         General
         """
         self.setup_logging()
-
-        if not test_enabled:
-            logging.warning(
-                f"NotificationService test only active on host defined hosts (current: {socket.gethostname()})"
-            )
-            return
 
         # dummy server
         s = sorter.network.tcp_server.TcpServer(
@@ -54,12 +43,6 @@ class NotificationServiceTest(test_helpers.BaseTest):
     def test_part_scanned(self):
         self.setup_logging()
 
-        if not test_enabled:
-            logging.warning(
-                f"NotificationService test only active on host defined hosts (current: {socket.gethostname()})."
-            )
-            return
-
         cs = sorter.notification_service.notification_service.NotificationService(
             host=None, disable_network=True, theme="kids", disable_pushover=True
         )
@@ -70,12 +53,6 @@ class NotificationServiceTest(test_helpers.BaseTest):
     def test_scanner_inhibition_ended(self):
         self.setup_logging()
 
-        if not test_enabled:
-            logging.warning(
-                f"NotificationService test only active on host defined hosts (current: {socket.gethostname()})."
-            )
-            return
-
         cs = sorter.notification_service.notification_service.NotificationService(
             host=None, disable_network=True, theme="kids", disable_pushover=True
         )
@@ -85,12 +62,6 @@ class NotificationServiceTest(test_helpers.BaseTest):
 
     def test_classification_result(self):
         self.setup_logging()
-
-        if not test_enabled:
-            logging.warning(
-                f"NotificationService test only active on host defined hosts (current: {socket.gethostname()})."
-            )
-            return
 
         cs = sorter.notification_service.notification_service.NotificationService(
             host=None, disable_network=True, theme="robot_german", disable_pushover=True
@@ -106,12 +77,6 @@ class NotificationServiceTest(test_helpers.BaseTest):
     def test_double_part_scanned(self):
         self.setup_logging()
 
-        if not test_enabled:
-            logging.warning(
-                f"NotificationService test only active on host defined hosts (current: {socket.gethostname()})."
-            )
-            return
-
         cs = sorter.notification_service.notification_service.NotificationService(
             host=None, disable_network=True, theme="robot_german", disable_pushover=True
         )
@@ -122,12 +87,6 @@ class NotificationServiceTest(test_helpers.BaseTest):
     def test_timeout_max_non_busy(self):
         self.setup_logging()
 
-        if not test_enabled:
-            logging.warning(
-                f"NotificationService test only active on host defined hosts (current: {socket.gethostname()})."
-            )
-            return
-
         cs = sorter.notification_service.notification_service.NotificationService(
             host=None, disable_network=True, theme="kids", disable_pushover=True
         )
@@ -137,12 +96,6 @@ class NotificationServiceTest(test_helpers.BaseTest):
 
     def test_pushover(self):
         self.setup_logging()
-
-        if not test_enabled:
-            logging.warning(
-                f"NotificationService test only active on host defined hosts (current: {socket.gethostname()})."
-            )
-            return
 
         cs = sorter.notification_service.notification_service.NotificationService(
             host=None, disable_network=True, theme="kids", disable_pushover=True

@@ -1,6 +1,7 @@
 import logging
 import sys
 import threading
+import time
 import traceback
 import unittest
 
@@ -38,4 +39,5 @@ class BaseTest(unittest.TestCase):
         self.setup_logging()
 
     def tearDown(self):
+        time.sleep(0.2)
         self.assert_threads_stopped()

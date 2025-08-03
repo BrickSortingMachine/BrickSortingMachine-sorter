@@ -34,7 +34,12 @@ If you're unsure what any of this means, we strongly advise against using this s
 If you want to build a LEGO® sorting machine yourself, I suggest to start with the [DIY build instructions](https://github.com/BrickSortingMachine). This repository maintains the sources to operate the LEGO® sorting machine. If you want to work on the machine learning components, the training scripts for the part classifier are maintained [here](https://github.com/BrickSortingMachine/BrickSortingMachine-training).
 
 ## Installation
-With [Python 3.11](https://www.python.org) installed, setup a virtual environment and install package dependencies:
+
+Prerequisites:
+- [Python 3.11](https://www.python.org)
+- v4l-utils
+
+Setup a virtual environment and install package dependencies:
 ```
 # linux
 python -m venv .venv

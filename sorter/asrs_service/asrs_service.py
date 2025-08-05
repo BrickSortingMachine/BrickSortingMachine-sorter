@@ -11,6 +11,7 @@ def grbl_callback(eventstring, *data):
     for d in data:
         args.append(str(d))
     logging.info("GRBL CALLBACK: event={}".format(eventstring.ljust(30), ", ".join(args)))
+    logging.info(data)
 
 
 class ASRSTcpClient(sorter.network.tcp_client.TcpClient):
@@ -77,3 +78,6 @@ class ASRSService:
 
     def notify(self, notification_type, notification_msg):
         pass
+
+    def homing(self):
+        self.grbl.homing()

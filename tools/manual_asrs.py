@@ -39,8 +39,11 @@ while True:
     except KeyboardInterrupt:
         k = "q"
 
-    if k == "r":
-        pass
+    if k == "h":
+        logging.info("Homing ...")        
+        asrs.homing()
+        logging.info("end")
+    
     elif k == "f":
         pass
 

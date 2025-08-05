@@ -4,6 +4,7 @@ import sorter.network.tcp_client
 from grbl_streamer import GrblStreamer
 
 import time
+import threading
 
 
 def grbl_callback(eventstring, *data):
@@ -12,6 +13,12 @@ def grbl_callback(eventstring, *data):
         args.append(str(d))
     logging.info("GRBL CALLBACK: event={}".format(eventstring.ljust(30), ", ".join(args)))
     logging.info(data)
+
+    if eventstring == "on_rx_buffer_percent" and data[0] == 0:
+        logging.info("Received event_grbl_rx_buffer_percent_zero")
+        event_grbl_rx_buffer_percent_zero.set()
+
+event_grbl_rx_buffer_percent_zero = threading.Event()
 
 
 class ASRSTcpClient(sorter.network.tcp_client.TcpClient):
@@ -80,4 +87,9 @@ class ASRSService:
         pass
 
     def homing(self):
+        event_grbl_rx_buffer_percent_zero.clear()
+        logging.info("Homing requested ...")
         self.grbl.homing()
+        logging.info("Homing waiting for completion ...")
+        event_grbl_rx_buffer_percent_zero.wait()
+        logging.info("Completed.")

@@ -40,9 +40,7 @@ while True:
         k = "q"
 
     if k == "h":
-        logging.info("Homing ...")        
         asrs.homing()
-        logging.info("end")
     
     elif k == "f":
         pass

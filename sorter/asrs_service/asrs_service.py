@@ -131,3 +131,6 @@ class ASRSService:
             logging.info("waiting ...")
             wait()
             logging.info("completed ...")
+    
+    def goto(self):
+        self.grbl.send_immediately("G0 X100 Y100")

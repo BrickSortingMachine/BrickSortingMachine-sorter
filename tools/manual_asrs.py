@@ -32,6 +32,7 @@ while True:
     print("Control Slide")
     print(" ")
     print("   [h]  Homing + Init")
+    print("   [p]  Goto")
     print("   [q]  Quit")
 
     # readkey
@@ -43,8 +44,8 @@ while True:
     if k == "h":
         asrs.homing()
     
-    elif k == "f":
-        pass
+    elif k == "p":
+        asrs.goto()
 
     elif k == "q":
         logging.info("Stopping ...")

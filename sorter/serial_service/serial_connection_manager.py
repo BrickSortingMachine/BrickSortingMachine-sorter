@@ -1,9 +1,11 @@
 import glob
 import logging
+import os
 import threading
 import time
 
 import serial
+from sorter.util.config_handler import ConfigHandler
 
 
 class SerialConnectionManager:
@@ -12,6 +14,16 @@ class SerialConnectionManager:
         self.handler_list = []
 
         self.max_iterations = max_iterations
+
+        config_handler = ConfigHandler()
+        try:
+            self.exclude_by_path = config_handler.get_param("serial_exclude_by_path")
+        except KeyError:
+            self.exclude_by_path = []
+        try:
+            self.exclude_by_id = config_handler.get_param("serial_exclude_by_id")
+        except KeyError:
+            self.exclude_by_id = []
 
         # wait for connections thread
         self.thread = threading.Thread(target=self.thread_fct)
@@ -116,7 +128,39 @@ class SerialConnectionManager:
         )
 
     def get_device_list(self):
-        return glob.glob("/dev/ttyUSB*")
+        """
+        Gets a list of all serial devices that are not on the exclude list.
+        It scans /dev/serial/by-path and /dev/serial/by-id, filters out
+        excluded devices, and returns the real device paths (e.g., /dev/ttyUSB0).
+        """
+        # Combine devices found by path and by ID
+        potential_symlinks = glob.glob("/dev/serial/by-path/*") + glob.glob(
+            "/dev/serial/by-id/*"
+        )
+
+        allowed_devices = set()  # Use a set to avoid duplicate real paths
+
+        for symlink in potential_symlinks:
+            # Get the stable identifier (the filename of the symlink)
+            identifier = os.path.basename(symlink)
+
+            # Check if the identifier is in either exclude list
+            is_excluded = (
+                identifier in self.exclude_by_path
+                or identifier in self.exclude_by_id
+            )
+
+            if not is_excluded:
+                try:
+                    # If not excluded, resolve the symlink to the real device path
+                    real_path = os.path.realpath(symlink)
+                    allowed_devices.add(real_path)
+                except OSError:
+                    # The device might have been unplugged between glob and realpath
+                    continue
+
+        logging.debug(f"Found allowed serial devices: {list(allowed_devices)}")
+        return list(allowed_devices)
 
     def get_not_connected_devices(self):
         path_list = self.get_device_list()

@@ -3,6 +3,8 @@ import logging
 import sorter.network.tcp_client
 from grbl_streamer import GrblStreamer
 
+import time
+
 
 def grbl_callback(eventstring, *data):
     args = []
@@ -75,7 +77,3 @@ class ASRSService:
 
     def notify(self, notification_type, notification_msg):
         pass
-
-    def stream_gcode(self):
-        gcode = "G0 X10 Y10\nG0 X0 Y0\n"
-        self.grbl.stream(gcode)

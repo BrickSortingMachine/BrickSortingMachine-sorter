@@ -31,7 +31,8 @@ while True:
     print(" ")
     print("Control Slide")
     print(" ")
-    print("   [h]   home              [q]  Quit")
+    print("   [h]  Homing + Init")
+    print("   [q]  Quit")
 
     # readkey
     try:

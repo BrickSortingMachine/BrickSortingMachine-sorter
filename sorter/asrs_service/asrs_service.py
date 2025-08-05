@@ -7,6 +7,27 @@ import time
 import threading
 
 
+
+event_grbl_rx_buffer_percent_zero = threading.Event()
+
+wait_event_str = None
+wait_data_0 = None
+wait_event = threading.Event()
+
+
+def wait_prepare(event_str, data_0=None):
+    global wait_event
+    global wait_event_str
+    global wait_data_0
+    wait_event.clear()
+    wait_event_str = event_str
+    wait_data_0 = data_0
+
+def wait():
+    if not wait_event.is_set():
+        wait_event.wait()
+
+
 def grbl_callback(eventstring, *data):
     args = []
     for d in data:
@@ -18,8 +39,9 @@ def grbl_callback(eventstring, *data):
         logging.info("Received event_grbl_rx_buffer_percent_zero")
         event_grbl_rx_buffer_percent_zero.set()
 
-event_grbl_rx_buffer_percent_zero = threading.Event()
-
+    if eventstring == wait_event_str:
+        if wait_data_0 is None or data[0] == wait_data_0:
+            wait_event.set()
 
 class ASRSTcpClient(sorter.network.tcp_client.TcpClient):
     def __init__(
@@ -77,6 +99,7 @@ class ASRSService:
         self.grbl.setup_logging()
         self.grbl.cnect(self.device_path, 115200)
         self.grbl.poll_start()
+        self.grbl.hash_state_requested = True
 
     def stop(self):
         self.grbl.disconnect()
@@ -87,9 +110,24 @@ class ASRSService:
         pass
 
     def homing(self):
+        # TODO: Class must be blocked before homing completed
+
+
         event_grbl_rx_buffer_percent_zero.clear()
         logging.info("Homing requested ...")
         self.grbl.homing()
         logging.info("Homing waiting for completion ...")
         event_grbl_rx_buffer_percent_zero.wait()
         logging.info("Completed.")
+
+        # G21 ; millimeters
+        # G90 ; absolute coordinate
+        # G92 X0 Y0 Z0 ; set origin
+        # G17 ; XY plane
+
+        logging.info("Sending G21 ...")
+        wait_prepare("on_write", "G21\n")
+        self.grbl.send_immediately("G21")
+        logging.info("waiting ...")
+        wait()
+        logging.info("completed ...")

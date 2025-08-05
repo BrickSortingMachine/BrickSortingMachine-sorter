@@ -112,12 +112,11 @@ class ASRSService:
     def homing(self):
         # TODO: Class must be blocked before homing completed
 
-
-        event_grbl_rx_buffer_percent_zero.clear()
         logging.info("Homing requested ...")
+        wait_prepare("on_rx_buffer_percent", 0)
         self.grbl.homing()
         logging.info("Homing waiting for completion ...")
-        event_grbl_rx_buffer_percent_zero.wait()
+        wait()
         logging.info("Completed.")
 
         # G21 ; millimeters
@@ -125,9 +124,10 @@ class ASRSService:
         # G92 X0 Y0 Z0 ; set origin
         # G17 ; XY plane
 
-        logging.info("Sending G21 ...")
-        wait_prepare("on_write", "G21\n")
-        self.grbl.send_immediately("G21")
-        logging.info("waiting ...")
-        wait()
-        logging.info("completed ...")
+        for msg in ["G21", "G90", "G92X0Y0Z0", "G17"]:
+            logging.info(f"Sending {msg} ...")
+            wait_prepare("on_write", msg+"\n")
+            self.grbl.send_immediately(msg)
+            logging.info("waiting ...")
+            wait()
+            logging.info("completed ...")

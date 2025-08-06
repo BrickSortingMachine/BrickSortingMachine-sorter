@@ -1,4 +1,5 @@
 import logging
+import sys
 
 import sorter.network.tcp_client
 from grbl_streamer import GrblStreamer
@@ -23,9 +24,11 @@ def wait_prepare(event_str, data_0=None):
     wait_event_str = event_str
     wait_data_0 = data_0
 
-def wait():
+def wait(timeout=5):
     if not wait_event.is_set():
-        wait_event.wait()
+        result = wait_event.wait(timeout)
+        if not result:
+            raise Exception(f"Timeout waiting for result message: wait_event_str{wait_event_str}")
 
 
 def grbl_callback(eventstring, *data):
@@ -126,7 +129,7 @@ class ASRSService:
         wait_prepare("on_rx_buffer_percent", 0)
         self.grbl.homing()
         logging.info("Homing waiting for completion ...")
-        wait()
+        wait(timeout=20)
         logging.info("Completed.")
 
         # G21 ; millimeters
@@ -144,7 +147,7 @@ class ASRSService:
     
     def goto(self):
         logging.info("Starting motion ...")
-        wait_prepare("on_rx_buffer_percent", 0)
+        wait_prepare("on_standstill", None)
         self.grbl.send_immediately("G0 X100 Y100")
         logging.info("Waiting for motion completion ...")
         wait()

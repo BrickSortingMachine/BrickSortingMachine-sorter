@@ -131,7 +131,7 @@ class ASRSService:
         wait_prepare("on_rx_buffer_percent", 0)
         self.grbl.homing()
         logging.info("Homing waiting for completion ...")
-        wait(timeout=20)
+        wait(timeout=30)
         logging.info("Completed.")
 
         # G21 ; millimeters
@@ -157,19 +157,34 @@ class ASRSService:
 
     def run_job(self):
 
+        home_x = 0
+        home_y = 500
+
         lowered = 20
         x = random.randint(0, 1150)
         y = random.randint(0, 500 - lowered)
 
         # prepare G-CODE sequence
+
+        # retrival
         self.grbl.write(f"G0X{x}Y{y+lowered}")
         self.grbl.write(f"G0X{x}Y{y+lowered}Z-10") # move in
         self.grbl.write(f"G1X{x}Y{y}F5000")  # move up slow
         self.grbl.write(f"G0X{x}Y{y}Z0") # move out
-        self.grbl.write(f"G0X00Y400")
+
+        # move to loading position
+        self.grbl.write(f"G0X{home_x}Y{home_y}")
+        self.grbl.write(f"G0X{home_x}Y{home_y}Z-20") # move in
+        self.grbl.write(f"G0X{home_x}Y{home_y}Z0") # move out
+        
+        # storage
+        self.grbl.write(f"G0X{x}Y{y}")
+        self.grbl.write(f"G0X{x}Y{y}Z-10") # move in
+        self.grbl.write(f"G1X{x}Y{y+lowered}F5000")  # move up slow
+        self.grbl.write(f"G0X{x}Y{y+lowered}Z0") # move out
         
         # trigger motion
         wait_prepare("on_standstill", None)
         self.grbl.job_run()
-        wait(timeout=10)
+        wait(timeout=20)
         logging.info("Job complete.")

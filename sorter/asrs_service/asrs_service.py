@@ -35,11 +35,10 @@ def grbl_callback(eventstring, *data):
     args = []
     for d in data:
         args.append(str(d))
-    logging.info("GRBL CALLBACK: event={}".format(eventstring.ljust(30), ", ".join(args)))
-    logging.info(data)
+    #logging.info("GRBL CALLBACK: event={}".format(eventstring.ljust(30), ", ".join(args)))
+    #logging.info(data)
 
     if eventstring == "on_rx_buffer_percent" and data[0] == 0:
-        logging.info("Received event_grbl_rx_buffer_percent_zero")
         event_grbl_rx_buffer_percent_zero.set()
 
     if eventstring == wait_event_str:
@@ -104,9 +103,8 @@ class ASRSService:
 
         self.grbl.hash_state_requested = True
 
-        logging.info("waiting")
+        # wait connection to complete before start polling
         time.sleep(2)
-        logging.info("go")
         self.poll_start()
         
         #

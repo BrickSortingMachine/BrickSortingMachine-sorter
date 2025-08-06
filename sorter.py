@@ -60,6 +60,25 @@ def run_notification(args, sub_parser):
         raise e
 
 
+def run_asrs(args, sub_parser):
+    import sorter.asrs_service.asrs_service
+
+    c = sorter.asrs_service.asrs_service.ASRSService(
+        args.host, disable_network=args.disable_network
+    )
+
+    logging.info("Stop ASRS service using Ctrl + C ...")
+    try:
+        while True:
+            time.sleep(100)
+    except KeyboardInterrupt:
+        logging.info("Stopping ...")
+        c.stop()
+    except Exception as e:
+        c.stop()
+        raise e
+
+
 def run_serial(args, sub_parser):
     import sorter.serial_service.serial_service as ss
 
@@ -218,6 +237,17 @@ if __name__ == "__main__":
     )
     notification_parser.add_argument("--theme", required=True, help="Sound theme")
 
+    # asrs
+    asrs_parser = subparsers.add_parser("asrs")
+    asrs_parser.set_defaults(command="asrs")
+    asrs_parser.add_argument("--host", required=True, help="Hostname of machine server")
+    asrs_parser.add_argument(
+        "--disable_network",
+        required=False,
+        action="store_true",
+        help="No network connection",
+    )
+
     # serial
     serial_parser = subparsers.add_parser("serial")
     serial_parser.set_defaults(command="serial")
@@ -250,6 +280,9 @@ if __name__ == "__main__":
 
     elif args.command.lower() == "notification":
         run_notification(args, notification_parser)
+
+    elif args.command.lower() == "asrs":
+        run_asrs(args, asrs_parser)
 
     elif args.command.lower() == "serial":
         run_serial(args, serial_parser)

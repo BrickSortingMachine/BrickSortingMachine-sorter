@@ -98,8 +98,11 @@ class ASRSService:
         self.grbl = GrblStreamer(grbl_callback)
         self.grbl.setup_logging()
         self.grbl.cnect(self.device_path, 115200)
+        
+        #self.grbl.hash_state_requested = True
+    
+    def poll_start(self):
         self.grbl.poll_start()
-        self.grbl.hash_state_requested = True
 
     def stop(self):
         self.grbl.disconnect()
@@ -133,4 +136,9 @@ class ASRSService:
             logging.info("completed ...")
     
     def goto(self):
+        logging.info("Starting motion ...")
+        wait_prepare("on_rx_buffer_percent", 0)
         self.grbl.send_immediately("G0 X100 Y100")
+        logging.info("Waiting for motion completion ...")
+        wait()
+        logging.info("Motion complete.")

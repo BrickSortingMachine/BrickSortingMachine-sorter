@@ -31,6 +31,7 @@ while True:
     print(" ")
     print("Control Slide")
     print(" ")
+    print("   [a]  Poll start")
     print("   [h]  Homing + Init")
     print("   [p]  Goto")
     print("   [q]  Quit")
@@ -41,6 +42,9 @@ while True:
     except KeyboardInterrupt:
         k = "q"
 
+    if k == "a":
+        asrs.poll_start()
+    
     if k == "h":
         asrs.homing()
     

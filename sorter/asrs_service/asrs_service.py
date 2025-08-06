@@ -80,6 +80,7 @@ class ASRSService:
         self,
         host: str,
         disable_network,
+        disable_device=False,
     ) -> None:
         # network thread
         if not disable_network:
@@ -96,11 +97,17 @@ class ASRSService:
         else:
             self.tcp_client = None
 
-        # star grbl stream
+        # GRBl connection
+        self.disable_device = disable_device
         self.device_path = "/dev/serial/by-path/pci-0000:00:14.0-usb-0:2:1.0-port0"
         self.grbl = GrblStreamer(grbl_callback)
         self.grbl.setup_logging()
-        self.grbl.cnect(self.device_path, 115200)
+
+        # simulation mode
+        if not self.disable_device:
+            self.grbl.cnect(self.device_path, 115200)
+        else:
+            self.grbl.target = "simulator"
 
         self.grbl.hash_state_requested = True
 

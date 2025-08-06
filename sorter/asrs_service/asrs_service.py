@@ -98,8 +98,15 @@ class ASRSService:
         self.grbl = GrblStreamer(grbl_callback)
         self.grbl.setup_logging()
         self.grbl.cnect(self.device_path, 115200)
+
+        self.grbl.hash_state_requested = True
+
+        logging.info("waiting")
+        time.sleep(2)
+        logging.info("go")
+        self.poll_start()
         
-        #self.grbl.hash_state_requested = True
+        #
     
     def poll_start(self):
         self.grbl.poll_start()

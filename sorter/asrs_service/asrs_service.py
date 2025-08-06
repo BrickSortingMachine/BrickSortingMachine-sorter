@@ -1,6 +1,7 @@
 import logging
 import threading
 import time
+import random
 
 from grbl_streamer import GrblStreamer
 
@@ -155,11 +156,19 @@ class ASRSService:
         logging.info("Motion complete.")
 
     def run_job(self):
-        self.grbl.write("G0X200Y200")
-        self.grbl.write("G0X200Y200Z-10")
-        self.grbl.write("G1X200Y180F5000")
-        self.grbl.write("G0X200Y180Z0")
-        self.grbl.write("G0X00Y400")
+
+        lowered = 20
+        x = random.randint(0, 1150)
+        y = random.randint(0, 500 - lowered)
+
+        # prepare G-CODE sequence
+        self.grbl.write(f"G0X{x}Y{y+lowered}")
+        self.grbl.write(f"G0X{x}Y{y+lowered}Z-10") # move in
+        self.grbl.write(f"G1X{x}Y{y}F5000")  # move up slow
+        self.grbl.write(f"G0X{x}Y{y}Z0") # move out
+        self.grbl.write(f"G0X00Y400")
+        
+        # trigger motion
         wait_prepare("on_standstill", None)
         self.grbl.job_run()
         wait(timeout=10)

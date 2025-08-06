@@ -147,10 +147,12 @@ class ASRSService:
         logging.info("Motion complete.")
 
     def run_job(self):
-        self.grbl.write("G0X200Y180")
-        self.grbl.write("G1X200Y200F5000")
-        self.grbl.write("G0X10Y10")
+        self.grbl.write("G0X200Y200")
+        self.grbl.write("G0X200Y200Z-10")
+        self.grbl.write("G1X200Y180F5000")
+        self.grbl.write("G0X200Y180Z0")
+        self.grbl.write("G0X00Y400")
         wait_prepare("on_standstill", None)
         self.grbl.job_run()
-        wait()
+        wait(timeout=10)
         logging.info("Job complete.")

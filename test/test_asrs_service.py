@@ -32,11 +32,9 @@ class ASRSServiceTest(test_helpers.BaseTest):
         )
         time.sleep(1)
 
-        s.broadcast(b"NTF part_scanned")
-        time.sleep(2)
-
-        s.broadcast(b"NTF double_part_scanned")
-        time.sleep(2)
+        # classification result
+        msg = "CLR 0 plate1x 1 100 1.218174 W3siY2xhc3MiOiAicGxhdGUxeCIsICJwcm9iYWJpbGl0eSI6IDF9LCB7ImNsYXNzIjogImJyaWNrMXgiLCAicHJvYmFiaWxpdHkiOiAwfSwgeyJjbGFzcyI6ICJicmljazJ4IiwgInByb2JhYmlsaXR5IjogMH1d W3siY2xhc3MiOiAicGxhdGUxeCIsICJwcm9iYWJpbGl0eSI6IDF9LCB7ImNsYXNzIjogImJyaWNrMXgiLCAicHJvYmFiaWxpdHkiOiAwfSwgeyJjbGFzcyI6ICJicmljazJ4IiwgInByb2JhYmlsaXR5IjogMH1d"
+        s.broadcast(bytes(msg, "utf-8"))
 
         # stop network
         asrs.stop()

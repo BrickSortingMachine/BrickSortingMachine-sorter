@@ -43,7 +43,7 @@ while True:
         k = "q"
 
     if k == "a":
-        asrs.poll_start()
+        asrs.run_job()
     
     if k == "h":
         asrs.homing()

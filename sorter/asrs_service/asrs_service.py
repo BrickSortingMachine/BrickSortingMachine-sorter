@@ -35,8 +35,8 @@ def grbl_callback(eventstring, *data):
     args = []
     for d in data:
         args.append(str(d))
-    #logging.info("GRBL CALLBACK: event={}".format(eventstring.ljust(30), ", ".join(args)))
-    #logging.info(data)
+    # logging.info("GRBL CALLBACK: event={}".format(eventstring.ljust(30), ", ".join(args)))
+    # logging.info(data)
 
     if eventstring == "on_rx_buffer_percent" and data[0] == 0:
         event_grbl_rx_buffer_percent_zero.set()
@@ -105,13 +105,8 @@ class ASRSService:
 
         # wait connection to complete before start polling
         time.sleep(2)
-        self.poll_start()
-        
-        #
-    
-    def poll_start(self):
         self.grbl.poll_start()
-
+    
     def stop(self):
         self.grbl.disconnect()
         if self.tcp_client is not None:
@@ -150,3 +145,12 @@ class ASRSService:
         logging.info("Waiting for motion completion ...")
         wait()
         logging.info("Motion complete.")
+
+    def run_job(self):
+        self.grbl.write("G0X200Y180")
+        self.grbl.write("G1X200Y200F5000")
+        self.grbl.write("G0X10Y10")
+        wait_prepare("on_standstill", None)
+        self.grbl.job_run()
+        wait()
+        logging.info("Job complete.")

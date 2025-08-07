@@ -40,10 +40,3 @@ class ASRSServiceTest(test_helpers.BaseTest):
         # stop network
         asrs.stop()
         s.stop()
-
-    def test_part_scanned(self):
-        self.setup_logging()
-
-        # asrs = sorter.asrs_service.asrs_service.ASRSService(
-        #     host=None, disable_network=True, theme="kids", disable_pushover=True
-        # )

@@ -27,7 +27,7 @@ def wait(timeout=5):
         result = wait_event.wait(timeout)
         if not result:
             raise Exception(
-                f"Timeout waiting for result message: wait_event_str{wait_event_str}"
+                f"Timeout waiting for event: {wait_event_str}"
             )
 
 
@@ -61,13 +61,28 @@ class ASRSTcpClient(sorter.network.tcp_client.TcpClient):
         part_list = str(msg, "utf-8").split(" ")
 
         try:
-            # notification request
-            if part_list[0] == "NTF":
-                logging.info(f"Received notification request - msg: {msg}")
-                notification_type = part_list[1]
-                notification_msg = " ".join(part_list[2:])
-                self.asrs_service.notify(notification_type, notification_msg)
-        except Exception:
+            # classification result
+            if part_list[0] == "CLR":
+                object_id = int(part_list[1])
+                predicted_class = part_list[2]
+                probability = float(part_list[3])
+                uniqueness = float(part_list[4])
+                average_process_time_sec = float(part_list[5])
+                pred_low_serialized = part_list[6]
+                pred_high_serialized = part_list[7]
+                pred_low_list = sorter.classification_service.classification_service.ClassificationService.deserialize(
+                    pred_low_serialized
+                )
+                pred_high_list = sorter.classification_service.classification_service.ClassificationService.deserialize(
+                    pred_high_serialized
+                )
+                logging.info(
+                    f"Received classification result - id: {object_id} pc: {predicted_class}"
+                    " prob: {probability*100:.0f}% uniqueness: {uniqueness:.0f}"
+                )
+                self.asrs_service.run_job()
+
+        except ValueError:
             logging.error(
                 "Decoding network message error - could be malformed/entangled messages"
             )
@@ -106,6 +121,7 @@ class ASRSService:
         if not self.disable_device:
             self.grbl.cnect(self.device_path, 115200)
         else:
+            logging.info("GRBL Streamer Simulation mode enabled.")
             self.grbl.target = "simulator"
 
         self.grbl.hash_state_requested = True
@@ -179,7 +195,11 @@ class ASRSService:
         self.grbl.write(f"G0X{x}Y{y+lowered}Z0") # move out
         
         # trigger motion
-        wait_prepare("on_standstill", None)
+        if not self.disable_device:
+            wait_prepare("on_standstill", None)
+        else:
+            wait_prepare("on_simulation_finished", None)
+
         self.grbl.job_run()
         wait(timeout=20)
         logging.info("Job complete.")

@@ -29,6 +29,7 @@ class ASRSServiceTest(test_helpers.BaseTest):
             host="127.0.0.1",
             disable_network=False,
             disable_device=True,
+            verbose=True,
         )
         time.sleep(1)
 

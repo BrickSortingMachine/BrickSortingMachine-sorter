@@ -51,7 +51,7 @@ def send_classification_result(object_class: str):
     ]
     high_list = low_list
 
-    msg = sorter.classification_service.classification_service.ClassificationService.compose_classification_result_message(
+    msg, msg_mqtt = sorter.classification_service.classification_service.ClassificationService.compose_classification_result_message(
         object_id=0,
         predicted_class=object_class,
         probability=1,

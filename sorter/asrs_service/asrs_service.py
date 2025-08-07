@@ -6,6 +6,7 @@ import random
 from grbl_streamer import GrblStreamer
 
 import sorter.network.tcp_client
+import sorter.classification_service.classification_service
 
 event_grbl_rx_buffer_percent_zero = threading.Event()
 

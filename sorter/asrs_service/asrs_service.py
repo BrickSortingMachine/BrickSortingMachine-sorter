@@ -31,12 +31,9 @@ def wait(timeout=5):
             )
 
 
-def grbl_callback(eventstring, *data):
-    args = []
-    for d in data:
-        args.append(str(d))
-    # logging.info("GRBL CALLBACK: event={}".format(eventstring.ljust(30), ", ".join(args)))
-    # logging.info(data)
+def grbl_callback(eventstring, data, verbose):
+    if verbose:
+        logging.info(f"GRBL callback: {eventstring} {data}")
 
     if eventstring == "on_rx_buffer_percent" and data[0] == 0:
         event_grbl_rx_buffer_percent_zero.set()
@@ -101,7 +98,7 @@ class ASRSService:
         # GRBl connection
         self.disable_device = disable_device
         self.device_path = "/dev/serial/by-path/pci-0000:00:14.0-usb-0:2:1.0-port0"
-        self.grbl = GrblStreamer(grbl_callback)
+        self.grbl = GrblStreamer(lambda e, *data: grbl_callback(e,data,verbose=True))
         self.grbl.setup_logging()
 
         # simulation mode
@@ -127,25 +124,22 @@ class ASRSService:
     def homing(self):
         # TODO: Class must be blocked before homing completed
 
-        logging.info("Homing requested ...")
-        wait_prepare("on_rx_buffer_percent", 0)
+        wait_prepare("on_stateupdate", "Idle")
         self.grbl.homing()
-        logging.info("Homing waiting for completion ...")
+        logging.info("Waiting for homing completion ...")
         wait(timeout=30)
-        logging.info("Completed.")
+        logging.info("done.")
 
         # G21 ; millimeters
         # G90 ; absolute coordinate
         # G92 X0 Y0 Z0 ; set origin
         # G17 ; XY plane
-
         for msg in ["G21", "G90", "G92X0Y0Z0", "G17"]:
             logging.info(f"Sending {msg} ...")
             wait_prepare("on_write", msg + "\n")
             self.grbl.send_immediately(msg)
-            logging.info("waiting ...")
             wait()
-            logging.info("completed ...")
+            logging.info("confirmed.")
 
     def goto(self):
         logging.info("Starting motion ...")

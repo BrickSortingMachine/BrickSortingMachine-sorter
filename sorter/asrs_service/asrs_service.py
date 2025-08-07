@@ -93,8 +93,9 @@ class ASRSService:
         self,
         host: str,
         disable_network,
-        disable_device=False,
-        verbose=False,
+        disable_device,
+        disable_auto_homing,
+        verbose,
     ) -> None:
         # network thread
         if not disable_network:
@@ -129,6 +130,17 @@ class ASRSService:
         # wait connection to complete before start polling
         time.sleep(2)
         self.grbl.poll_start()
+
+        # auto-homing
+        if not disable_auto_homing:
+            logging.warning("⚠️  Machine will auto-home in 5 seconds")
+            logging.warning("Ensure machine is clear")
+            for i in range(5, 0, -1):
+                logging.warning(f"{i} ...")
+                time.sleep(1)
+            self.homing()
+        
+        logging.info("Service ready for usage.")
 
     def stop(self):
         self.grbl.disconnect()

@@ -64,7 +64,11 @@ def run_asrs(args, sub_parser):
     import sorter.asrs_service.asrs_service
 
     c = sorter.asrs_service.asrs_service.ASRSService(
-        args.host, disable_network=args.disable_network
+        args.host,
+        disable_network=args.disable_network,
+        disable_device=args.disable_device,
+        disable_auto_homing=args.disable_auto_homing,
+        verbose=args.verbose,
     )
 
     logging.info("Stop ASRS service using Ctrl + C ...")
@@ -237,17 +241,6 @@ if __name__ == "__main__":
     )
     notification_parser.add_argument("--theme", required=True, help="Sound theme")
 
-    # asrs
-    asrs_parser = subparsers.add_parser("asrs")
-    asrs_parser.set_defaults(command="asrs")
-    asrs_parser.add_argument("--host", required=True, help="Hostname of machine server")
-    asrs_parser.add_argument(
-        "--disable_network",
-        required=False,
-        action="store_true",
-        help="No network connection",
-    )
-
     # serial
     serial_parser = subparsers.add_parser("serial")
     serial_parser.set_defaults(command="serial")
@@ -259,6 +252,35 @@ if __name__ == "__main__":
         required=False,
         action="store_true",
         help="No network connection",
+    )
+
+    # asrs
+    asrs_parser = subparsers.add_parser("asrs")
+    asrs_parser.set_defaults(command="asrs")
+    asrs_parser.add_argument("--host", required=True, help="Hostname of machine server")
+    asrs_parser.add_argument(
+        "--disable_network",
+        required=False,
+        action="store_true",
+        help="No network connection",
+    )
+    asrs_parser.add_argument(
+        "--disable_device",
+        required=False,
+        action="store_true",
+        help="No grbl device connection",
+    )
+    asrs_parser.add_argument(
+        "--disable_auto_homing",
+        required=False,
+        action="store_true",
+        help="No homing on startup (use with caution)",
+    )
+    asrs_parser.add_argument(
+        "--verbose",
+        required=False,
+        action="store_true",
+        help="Display grbl-streamer log messages",
     )
 
     args = parser.parse_args()

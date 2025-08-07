@@ -30,7 +30,7 @@ while True:
     print(" ")
     print("Control Slide")
     print(" ")
-    print("   [a]  Poll start")
+    print("   [a]  Run storage job")
     print("   [h]  Homing + Init")
     print("   [p]  Goto")
     print("   [q]  Quit")

@@ -45,7 +45,7 @@ jobs:
     - name: Upload documentation artifact
       uses: actions/upload-artifact@v4
       with:
-        name: documentation-site
+        name: documentation
         path: site/
 
 

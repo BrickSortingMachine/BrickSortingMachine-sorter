@@ -1,8 +1,10 @@
 site_name: BrickSortingMachine
 nav:
   - Home: index.md
-  - About: about.md
-  - MQTT: MQTT.md
+  - Installation: index.md
+  - Usage: index.md
+  - Architecture: about.md
+  - MQTT Transition: MQTT.md
 theme: readthedocs
 
 # The directory containing your Markdown source files.

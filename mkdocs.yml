@@ -5,7 +5,10 @@ nav:
   - Usage: usage_guide.md
   - Architecture: architecture.md
   - MQTT Transition: MQTT.md
-theme: readthedocs
+
+#theme: readthedocs  # not supporting the privacy plugin
+theme:
+  name: material
 
 # The directory containing your Markdown source files.
 docs_dir: doc
@@ -13,5 +16,6 @@ docs_dir: doc
 repo_url: https://github.com/your-username/your-repository
 
 plugins:
-    - search
-    - mermaid2
+  - search
+  - mermaid2
+  - privacy

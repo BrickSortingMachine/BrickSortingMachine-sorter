@@ -37,3 +37,4 @@ pushover_credentials.json
 
 # mkdocs
 site/
+.cache

@@ -12,6 +12,13 @@ The primary goals of this design are:
 The following diagram illustrates the main components of the software and their interactions. It shows both the legacy TCP-based communication model and the modern MQTT-based model.
 
 ```mermaid
+---
+config:
+  layout: elk
+  elk:
+    mergeEdges: true
+    nodePlacementStrategy: LINEAR_SEGMENTS
+---
 graph TD
     subgraph "Brick Sorting Machine Software"
         subgraph "Communication Layer"

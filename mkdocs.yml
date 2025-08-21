@@ -1,11 +1,17 @@
 site_name: BrickSortingMachine
 nav:
   - Home: index.md
-  - About: about.md
-  - MQTT: mqtt.md
+  - Installation: installation.md
+  - Usage: usage_guide.md
+  - Architecture: architecture.md
+  - MQTT Transition: MQTT.md
 theme: readthedocs
 
 # The directory containing your Markdown source files.
 docs_dir: doc
 
 repo_url: https://github.com/your-username/your-repository
+
+plugins:
+    - search
+    - mermaid2

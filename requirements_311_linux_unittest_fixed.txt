@@ -14,4 +14,4 @@ pydantic==2.11.7
 grbl-streamer==2.0.2
 mkdocs
 mkdocs-material
-
+mkdocs-mermaid2-plugin

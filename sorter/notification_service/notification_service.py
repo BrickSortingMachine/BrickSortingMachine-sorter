@@ -9,8 +9,8 @@ import sorter.network.tcp_client
 
 if sys.platform == "win32":
     import winsound
-if sys.platform == "linux":
-    import playsound
+# if sys.platform == "linux":
+#     import playsound
 
 
 class NSTcpClient(sorter.network.tcp_client.TcpClient):
@@ -37,10 +37,11 @@ class NSTcpClient(sorter.network.tcp_client.TcpClient):
                 notification_type = part_list[1]
                 notification_msg = " ".join(part_list[2:])
                 self.notificaiton_service.notify(notification_type, notification_msg)
-        except Exception:
+        except Exception as e:
             logging.error(
                 "Decoding network message error - could be malformed/entangled messages"
             )
+            logging.exception(e)
 
 
 class NotificationService:
@@ -111,7 +112,8 @@ class NotificationService:
                 if sys.platform == "win32":
                     winsound.PlaySound(str(fp), winsound.SND_FILENAME)
                 elif sys.platform == "linux":
-                    playsound.playsound(str(fp))
+                    #playsound.playsound(str(fp))
+                    pass
             else:
                 logging.warn(f'No sound for part name "{notification_msg}"')
 
@@ -149,16 +151,30 @@ class NotificationService:
             return
 
         logging.info(f"Sending pushover message: {msg}")
-        conn = http.client.HTTPSConnection("api.pushover.net:443")
-        conn.request(
-            "POST",
-            "/1/messages.json",
-            urllib.parse.urlencode(
-                {
-                    "token": self.pushover_credentials["api_token"],
-                    "user": self.pushover_credentials["user_key"],
-                    "message": msg,
-                }
-            ),
-            {"Content-type": "application/x-www-form-urlencoded"},
-        )
+        try:
+            conn = http.client.HTTPSConnection("api.pushover.net:443")
+            response = conn.request(
+                "POST",
+                "/1/messages.json",
+                urllib.parse.urlencode(
+                    {
+                        "token": self.pushover_credentials["api_token"],
+                        "user": self.pushover_credentials["user_key"],
+                        "message": msg,
+                    }
+                ),
+                {"Content-type": "application/x-www-form-urlencoded"},
+            )
+
+            # check feedback
+            response = conn.getresponse()
+            data = response.read()
+            data_dict = json.loads(data.decode('utf-8'))
+            if response.status != 200 or data_dict["status"] != 1:
+                logging.error(f"Status: {response.status} {response.reason}")
+                logging.error(f"Response Body: {data.decode('utf-8')}")
+                raise Exception(f"Pushover request failed - see log info above")
+
+        finally:
+            if conn:
+                conn.close()

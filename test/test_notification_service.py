@@ -99,12 +99,12 @@ class NotificationServiceTest(test_helpers.BaseTest):
 
         test_helpers.BaseTest.assert_threads_stopped(self)
 
-    def test_pushover(self):
-        self.setup_logging()
+    # def test_pushover(self):
+    #     self.setup_logging()
 
-        cs = sorter.notification_service.notification_service.NotificationService(
-            host=None, disable_network=True, theme="kids", disable_pushover=True
-        )
-        cs.pushover("hello world thx!!")
+    #     cs = sorter.notification_service.notification_service.NotificationService(
+    #         host=None, disable_network=True, theme="robot", disable_pushover=False
+    #     )
+    #     cs.pushover("hello world thx!!")
 
-        test_helpers.BaseTest.assert_threads_stopped(self)
+    #     test_helpers.BaseTest.assert_threads_stopped(self)

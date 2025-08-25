@@ -180,6 +180,7 @@ class VisionService:
         self.detected_crop_high = None
         self.last_pred_low_list = None
         self.last_pred_high_list = None
+        self.classifier_animation_current_frame = 0
 
     def stop(self):
         if not self.disable_network:
@@ -550,6 +551,7 @@ class VisionService:
         # visu
         self.last_pred_low_list = pred_low_list
         self.last_pred_high_list = pred_high_list
+        self.classifier_animation_current_frame = 0
 
         # prediction into json
         json_fp = found_item.filepath + ".json"
@@ -682,7 +684,7 @@ class VisionService:
 
         return sec_since_last_busy
 
-    def draw_classifier_result(self, frame_viz):
+    def draw_classifier_result(self, frame_viz, animation_frame_count=30):
         # mask viz mode
         if self.enable_viz_mask:
             return
@@ -714,6 +716,13 @@ class VisionService:
             txt_bellow_bar_y_offset = 35
             vertical_step = 50
 
+            # Animation
+            if self.classifier_animation_current_frame < animation_frame_count:
+                self.classifier_animation_current_frame += 1
+
+            progress = self.classifier_animation_current_frame / animation_frame_count
+            progress = min(progress, 1.0)
+
             # low
             for cue in ["low"]:  # , 'high'
                 bar_x = 4 * margin + 2 * cutout_size
@@ -725,7 +734,10 @@ class VisionService:
                 bar_max_width = box_width - (4 * margin + 2 * cutout_size)
                 for i in range(3):
                     assert 0 <= pred_list[i]["probability"] <= 1
-                    bar_width = int(pred_list[i]["probability"] * float(bar_max_width))
+                    target_bar_width = int(
+                        pred_list[i]["probability"] * float(bar_max_width)
+                    )
+                    bar_width = int(target_bar_width * progress)
                     cv2.rectangle(
                         frame_viz,
                         (bar_x, bar_y),

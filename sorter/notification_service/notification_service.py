@@ -169,7 +169,7 @@ class NotificationService:
             # check feedback
             response = conn.getresponse()
             data = response.read()
-            data_dict = json.loads(data.decode('utf-8'))
+            data_dict = json.loads(data.decode("utf-8"))
             if response.status != 200 or data_dict["status"] != 1:
                 logging.error(f"Status: {response.status} {response.reason}")
                 logging.error(f"Response Body: {data.decode('utf-8')}")

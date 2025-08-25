@@ -34,9 +34,9 @@ def create_mask(shape, A, B):
 
 
 def blit_img(dst, src, offset_x, offset_y):
-    dst[
-        offset_y : (offset_y + src.shape[0]), offset_x : (offset_x + src.shape[1])
-    ] = src
+    dst[offset_y : (offset_y + src.shape[0]), offset_x : (offset_x + src.shape[1])] = (
+        src
+    )
 
 
 class ObjectDetector:

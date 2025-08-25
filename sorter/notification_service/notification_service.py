@@ -112,7 +112,7 @@ class NotificationService:
                 if sys.platform == "win32":
                     winsound.PlaySound(str(fp), winsound.SND_FILENAME)
                 elif sys.platform == "linux":
-                    #playsound.playsound(str(fp))
+                    # playsound.playsound(str(fp))
                     pass
             else:
                 logging.warn(f'No sound for part name "{notification_msg}"')
@@ -173,7 +173,7 @@ class NotificationService:
             if response.status != 200 or data_dict["status"] != 1:
                 logging.error(f"Status: {response.status} {response.reason}")
                 logging.error(f"Response Body: {data.decode('utf-8')}")
-                raise Exception(f"Pushover request failed - see log info above")
+                raise Exception("Pushover request failed - see log info above")
 
         finally:
             if conn:

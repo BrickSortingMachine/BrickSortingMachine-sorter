@@ -684,7 +684,7 @@ class VisionService:
 
         return sec_since_last_busy
 
-    def draw_classifier_result(self, frame_viz, animation_frame_count=30):
+    def draw_classifier_result(self, frame_viz, animation_frame_count=5):
         # mask viz mode
         if self.enable_viz_mask:
             return

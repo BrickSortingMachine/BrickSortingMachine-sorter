@@ -7,7 +7,7 @@ from rich.text import Text
 from sorter.util.time_delta_format import time_delta_format
 
 
-class MonitorApp(App):
+class BrickSortingMachine(App):
     """A Textual app to monitor the brick sorter services."""
 
     CSS_PATH = "tui.css"

@@ -1,6 +1,16 @@
 {
   "services": [
     {
+      "name": "Message Broker",
+      "command": "broker",
+      "enabled": true,
+      "args": {
+        "--port": "8884"
+      },
+      "restart_attempts": 3,
+      "depends_on": []
+    },
+    {
       "name": "Vision-Service",
       "command": "vision",
       "enabled": true,

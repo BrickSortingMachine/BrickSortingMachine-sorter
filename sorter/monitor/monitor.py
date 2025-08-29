@@ -8,7 +8,7 @@ from typing import List
 from sorter.monitor.log_monitor import LogMonitor
 from sorter.monitor.process_manager import ProcessManager
 from sorter.monitor.service import Service
-from sorter.monitor.tui import MonitorApp
+from sorter.monitor.tui import BrickSortingMachine
 
 
 class Monitor:
@@ -212,7 +212,7 @@ class Monitor:
         control_thread.start()
 
         # Create and run the Textual app
-        app = MonitorApp(monitor=self)
+        app = BrickSortingMachine(monitor=self)
         app.run()
 
         # After the app exits (e.g., user presses "q"), ensure everything is stopped.

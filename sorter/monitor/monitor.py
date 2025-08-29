@@ -6,16 +6,15 @@ import threading
 import time
 from typing import List
 
+from sorter.monitor.log_monitor import LogMonitor
+from sorter.monitor.process_manager import ProcessManager
+from sorter.monitor.service import Service
+from sorter.monitor.tui import TUI
 
-from sorter.supervisor.log_monitor import LogMonitor
-from sorter.supervisor.process_manager import ProcessManager
-from sorter.supervisor.service import Service
-from sorter.supervisor.tui import TUI
 
-
-class Supervisor:
+class Monitor:
     """
-    The main class for the supervisor mode. It loads the configuration,
+    The main class for the monitor mode. It loads the configuration,
     manages the lifecycle of services, and controls the TUI.
     """
 
@@ -87,7 +86,7 @@ class Supervisor:
         with self.message_lock:
             formatted_message = f"[{service_name}] {message}"
             self.messages.append(formatted_message)
-            if len(self.messages) > 10:
+            if len(self.messages) > 8:
                 self.messages.pop(0)
 
     def is_shutting_down(self) -> bool:
@@ -101,9 +100,10 @@ class Supervisor:
     def restart_all_services(self):
         logging.info("Restarting all services...")
         self.process_manager.stop_all(self.services)
-        # The control loop will handle restarting them.
         for service in self.services:
             service.status = "STOPPED"
+            service.final_uptime_seconds = None
+            service.start_time = None
 
     def _are_dependencies_met(self, service_to_check: Service) -> bool:
         """Checks if all dependencies for a given service are in the RUNNING state."""
@@ -131,6 +131,7 @@ class Supervisor:
         if service.status in ["STOPPED", "WAITING"]:
             if self._are_dependencies_met(service):
                 logging.info(f"Dependencies met for '{service.name}'. Starting...")
+                service.final_uptime_seconds = None  # Reset uptime on start
                 self.process_manager.start_service(service)
                 self.log_monitor.start_monitoring(service)
             else:
@@ -142,6 +143,8 @@ class Supervisor:
                     f"Service '{service.name}' exited immediately with code {process_exit_code}."
                 )
                 service.status = "ERROR"
+                if service.start_time:
+                    service.final_uptime_seconds = int(time.time() - service.start_time)
                 self.add_message(
                     f"ERROR: Exited immediately (code: {process_exit_code})",
                     service.name,
@@ -161,6 +164,8 @@ class Supervisor:
                     f"Service '{service.name}' exited unexpectedly with code {process_exit_code}."
                 )
                 service.status = "ERROR"
+                if service.start_time:
+                    service.final_uptime_seconds = int(time.time() - service.start_time)
                 self.add_message(
                     f"ERROR: Exited unexpectedly (code: {process_exit_code})",
                     service.name,
@@ -188,6 +193,7 @@ class Supervisor:
             time.sleep(2)
             if self._are_dependencies_met(service):
                 logging.info(f"Re-launching service '{service.name}'.")
+                service.final_uptime_seconds = None  # Reset uptime on restart
                 self.process_manager.start_service(service)
                 self.log_monitor.start_monitoring(service)
             else:
@@ -197,7 +203,7 @@ class Supervisor:
                 service.status = "WAITING"
 
     def run(self):
-        """Starts the supervisor, including the TUI and control loop."""
+        """Starts the monitor, including the TUI and control loop."""
         if not self.services:
             logging.warning("No enabled services to run. Exiting.")
             return
@@ -212,7 +218,7 @@ class Supervisor:
             logging.error(f"TUI failed with a curses error: {e}")
             print("TUI failed. Your terminal might be too small or not support colors.")
         except Exception as e:
-            logging.critical(f"Supervisor crashed: {e}", exc_info=True)
+            logging.critical(f"Monitor crashed: {e}", exc_info=True)
         finally:
             if not self.is_shutting_down():
                 self.shutdown()

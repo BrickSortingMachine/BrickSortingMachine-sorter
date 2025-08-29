@@ -1,10 +1,9 @@
 import curses
-import datetime
 import logging
 import time
 from typing import List
 
-from sorter.supervisor.service import Service
+from sorter.monitor.service import Service
 from sorter.util.time_delta_format import time_delta_format
 
 
@@ -76,7 +75,9 @@ class TUI:
             status_str = status.ljust(8)
 
             uptime_str = "N/A"
-            if service.start_time:
+            if service.final_uptime_seconds is not None:
+                uptime_str = time_delta_format(service.final_uptime_seconds)
+            elif service.start_time:
                 uptime_seconds = int(time.time() - service.start_time)
                 uptime_str = time_delta_format(uptime_seconds)
             uptime_str = uptime_str.ljust(8)
@@ -99,19 +100,18 @@ class TUI:
         # Table uses 4 rows for header/borders + 1 row per service.
         panel_y_start = 4 + services_count + 2
 
-        # If there's not enough space, don't draw the panel.
-        # We need at least 3 lines for the panel (top border, title, bottom border).
+        # If there's not enough space for the panel header and at least one message, don't draw.
         if panel_y_start > h - 4:
             return
 
-        title = "Recent Messages"
+        title = "Recent Messages (Last 8)"
         self.stdscr.addstr(panel_y_start - 1, 1, "+" + "-" * (w - 3) + "+")
         self.stdscr.addstr(panel_y_start, 2, title)
 
         for i, msg in enumerate(messages):
             y = panel_y_start + 1 + i
-            # Stop if we are about to hit the footer.
-            if y >= h - 2:
+            # Stop if we are about to hit the footer or have drawn 8 messages.
+            if i >= 8 or y >= h - 2:
                 break
 
             color_pair = self.COLOR_WHITE
@@ -122,24 +122,26 @@ class TUI:
 
             self.stdscr.addstr(y, 2, msg[: w - 4], curses.color_pair(color_pair))
 
-        bottom_y = min(panel_y_start + 1 + len(messages) + 1, h - 2)
+        # Calculate where the bottom border should be.
+        num_messages_drawn = min(len(messages), 8)
+        bottom_y = min(panel_y_start + 1 + num_messages_drawn, h - 2)
         self.stdscr.addstr(bottom_y, 1, "+" + "-" * (w - 3) + "+")
 
-    def draw(self, supervisor):
+    def draw(self, monitor):
         """Main drawing function, called in the loop."""
         h, w = self.stdscr.getmaxyx()
         self.stdscr.clear()
 
         # Header
-        log_path_str = f"Brick Sorter Supervisor - {supervisor.process_manager.log_dir}"
+        log_path_str = f"Brick Sorter Monitor - {monitor.process_manager.log_dir}"
         self.stdscr.addstr(0, 1, log_path_str[: w - 2])
 
         # Table
-        services = supervisor.get_services()
+        services = monitor.get_services()
         self._draw_table(services)
 
         # Messages
-        self._draw_messages(supervisor.get_messages(), len(services))
+        self._draw_messages(monitor.get_messages(), len(services))
 
         # Footer
         footer = "Q: Quit | R: Restart All"
@@ -147,20 +149,19 @@ class TUI:
 
         self.stdscr.refresh()
 
-    def run(self, stdscr, supervisor):
+    def run(self, stdscr, monitor):
         """The main loop for the TUI, wrapped by curses.wrapper."""
         self._setup_curses(stdscr)
 
-        while not supervisor.is_shutting_down():
-            self.draw(supervisor)
+        while not monitor.is_shutting_down():
+            self.draw(monitor)
 
             # Handle user input
             key = self.stdscr.getch()
             if key == ord("q") or key == ord("Q"):
-                supervisor.shutdown()
+                monitor.shutdown()
             elif key == ord("r") or key == ord("R"):
-                # This will be implemented later
                 logging.info("User requested restart of all services.")
-                supervisor.restart_all_services()
+                monitor.restart_all_services()
 
             time.sleep(0.2)  # Refresh rate

@@ -125,11 +125,11 @@ def run_vision(args, sub_parser):
         c.stop()
 
 
-def run_supervisor(args, sub_parser):
-    from sorter.supervisor.supervisor import Supervisor
+def run_monitor(args, sub_parser):
+    from sorter.monitor.monitor import Monitor
 
-    s = Supervisor(pathlib.Path(args.config))
-    s.run()
+    m = Monitor(pathlib.Path(args.config))
+    m.run()
 
 
 if __name__ == "__main__":
@@ -238,11 +238,11 @@ if __name__ == "__main__":
         help="No network connection",
     )
 
-    # supervisor
-    supervisor_parser = subparsers.add_parser("supervisor")
-    supervisor_parser.set_defaults(command="supervisor")
-    supervisor_parser.add_argument(
-        "--config", required=True, help="Path to the supervisor config file"
+    # run/monitor mode
+    monitor_parser = subparsers.add_parser("run")
+    monitor_parser.set_defaults(command="run")
+    monitor_parser.add_argument(
+        "--config", required=True, help="Path to the monitor config file"
     )
 
     args = parser.parse_args()
@@ -268,8 +268,8 @@ if __name__ == "__main__":
     elif args.command.lower() == "serial":
         run_serial(args, serial_parser)
 
-    elif args.command.lower() == "supervisor":
-        run_supervisor(args, supervisor_parser)
+    elif args.command.lower() == "run":
+        run_monitor(args, monitor_parser)
 
     # standard help
     else:

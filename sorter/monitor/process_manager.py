@@ -7,7 +7,7 @@ import subprocess
 import sys
 import time
 
-from sorter.supervisor.service import Service
+from sorter.monitor.service import Service
 
 
 class ProcessManager:

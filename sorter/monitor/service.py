@@ -27,6 +27,8 @@ class Service:
     # The 'WARN' status is a special case. The process is still running,
     # but we want to highlight it in the TUI.
     has_warned: bool = False
+    # To store the final uptime when a process stops
+    final_uptime_seconds: Optional[int] = None
 
     def __post_init__(self):
         """Initializes remaining_restarts after the object is created."""

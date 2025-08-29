@@ -2,8 +2,7 @@ import logging
 import threading
 import time
 
-
-from sorter.supervisor.service import Service
+from sorter.monitor.service import Service
 
 
 class LogMonitor:
@@ -12,8 +11,8 @@ class LogMonitor:
     each in its own thread.
     """
 
-    def __init__(self, supervisor):
-        self.supervisor = supervisor
+    def __init__(self, monitor):
+        self.monitor = monitor
         self._monitor_threads = {}
 
     def start_monitoring(self, service: Service):
@@ -40,7 +39,7 @@ class LogMonitor:
         """
         # Wait for the log file to be created by the ProcessManager
         while not service.log_file or not service.log_file.exists():
-            if self.supervisor.is_shutting_down():
+            if self.monitor.is_shutting_down():
                 return
             time.sleep(0.2)
 
@@ -50,9 +49,9 @@ class LogMonitor:
                 # Go to the end of the file in case there's pre-existing text
                 f.seek(0, 2)
 
-                # The loop continues as long as the supervisor is running and the
+                # The loop continues as long as the monitor is running and the
                 # service is in a state that implies it should be running.
-                while not self.supervisor.is_shutting_down() and service.status not in [
+                while not self.monitor.is_shutting_down() and service.status not in [
                     "STOPPED",
                     "ERROR",
                 ]:
@@ -63,9 +62,9 @@ class LogMonitor:
 
                     line = line.strip()
                     if "ERROR" in line:
-                        self.supervisor.add_message(line, service.name)
+                        self.monitor.add_message(line, service.name)
                     elif "WARN" in line:
-                        self.supervisor.add_message(line, service.name)
+                        self.monitor.add_message(line, service.name)
                         service.has_warned = True  # Set flag for TUI color
         except Exception as e:
             logging.error(

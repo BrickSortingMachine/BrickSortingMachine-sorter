@@ -4,11 +4,12 @@ import sys
 import unittest
 from unittest.mock import MagicMock, patch, mock_open
 
-from sorter.supervisor.supervisor import Supervisor
-from sorter.supervisor.service import Service
-from sorter.supervisor.process_manager import ProcessManager
+from sorter.monitor.monitor import Monitor
+from sorter.monitor.service import Service
+from sorter.monitor.process_manager import ProcessManager
 
-class TestSupervisor(unittest.TestCase):
+
+class TestMonitor(unittest.TestCase):
 
     def setUp(self):
         # Create a temporary directory for configs if it doesn't exist
@@ -25,7 +26,7 @@ class TestSupervisor(unittest.TestCase):
             self.config_dir.rmdir()
 
     def _write_config(self, data):
-        with open(self.config_path, 'w') as f:
+        with open(self.config_path, "w") as f:
             json.dump(data, f)
 
     def test_load_valid_config(self):
@@ -39,24 +40,26 @@ class TestSupervisor(unittest.TestCase):
                     "args": {"--foo": "bar"},
                     "restart_attempts": 3,
                     "depends_on": ["dep1"],
-                    "startup_delay_seconds": 2
+                    "startup_delay_seconds": 2,
                 },
                 {
                     "name": "DisabledService",
                     "command": "test2",
                     "enabled": False,
-                    "args": {}
-                }
+                    "args": {},
+                },
             ]
         }
         self._write_config(config_data)
 
         # Patch the ProcessManager to avoid creating log directories
-        with patch('sorter.supervisor.process_manager.ProcessManager._create_log_directory'):
-            supervisor = Supervisor(self.config_path)
+        with patch(
+            "sorter.monitor.process_manager.ProcessManager._create_log_directory"
+        ):
+            monitor = Monitor(self.config_path)
 
-        self.assertEqual(len(supervisor.services), 1)
-        service = supervisor.services[0]
+        self.assertEqual(len(monitor.services), 1)
+        service = monitor.services[0]
         self.assertEqual(service.name, "TestService1")
         self.assertEqual(service.command, "test1")
         self.assertEqual(service.args, {"--foo": "bar"})
@@ -70,32 +73,45 @@ class TestSupervisor(unittest.TestCase):
             "services": [{"name": "Incomplete", "enabled": True, "args": {}}]
         }
         self._write_config(config_data)
-        with patch('sorter.supervisor.process_manager.ProcessManager._create_log_directory'):
+        with patch(
+            "sorter.monitor.process_manager.ProcessManager._create_log_directory"
+        ):
             with self.assertRaises(ValueError):
-                Supervisor(self.config_path)
+                Monitor(self.config_path)
 
     def test_load_invalid_json(self):
         """Tests that loading a malformed JSON file raises a JSONDecodeError."""
-        with open(self.config_path, 'w') as f:
-            f.write("{'services': [}") # Invalid JSON
-        with patch('sorter.supervisor.process_manager.ProcessManager._create_log_directory'):
+        with open(self.config_path, "w") as f:
+            f.write("{'services': [}")  # Invalid JSON
+        with patch(
+            "sorter.monitor.process_manager.ProcessManager._create_log_directory"
+        ):
             with self.assertRaises(json.JSONDecodeError):
-                Supervisor(self.config_path)
+                Monitor(self.config_path)
 
-    @patch('sorter.supervisor.process_manager.subprocess.Popen')
+    @patch("sorter.monitor.process_manager.subprocess.Popen")
     def test_process_manager_command_construction(self, mock_popen):
         """Tests that the ProcessManager constructs service commands correctly."""
-        # We don't need a real supervisor for this, just the ProcessManager
+        # We don't need a real monitor for this, just the ProcessManager
         pm = ProcessManager()
 
         service = Service(
-            name="CmdTest", command="my-command", enabled=True,
-            args={"--host": "localhost", "--port": "8080", "--verbose": True, "--disabled-feature": False},
-            restart_attempts=0, depends_on=[], startup_delay_seconds=0
+            name="CmdTest",
+            command="my-command",
+            enabled=True,
+            args={
+                "--host": "localhost",
+                "--port": "8080",
+                "--verbose": True,
+                "--disabled-feature": False,
+            },
+            restart_attempts=0,
+            depends_on=[],
+            startup_delay_seconds=0,
         )
 
         # Mock the open call to avoid creating real log files
-        with patch('builtins.open', mock_open()):
+        with patch("builtins.open", mock_open()):
             pm.start_service(service)
 
         mock_popen.assert_called_once()
@@ -115,29 +131,29 @@ class TestSupervisor(unittest.TestCase):
         self.assertNotIn("--disabled-feature", command_list)
 
         # Check the environment variables
-        env = call_kwargs.get('env')
+        env = call_kwargs.get("env")
         self.assertIn("SESSION_SECRET", env)
         self.assertEqual(env["PYTHONUNBUFFERED"], "1")
 
 
-class TestSupervisorLogic(unittest.TestCase):
+class TestMonitorLogic(unittest.TestCase):
 
     def setUp(self):
-        # We need a supervisor instance, but we'll mock its dependencies
+        # We need a monitor instance, but we'll mock its dependencies
         # Patch ProcessManager and LogMonitor to avoid side effects
-        self.process_manager_patch = patch('sorter.supervisor.supervisor.ProcessManager')
-        self.log_monitor_patch = patch('sorter.supervisor.supervisor.LogMonitor')
+        self.process_manager_patch = patch("sorter.monitor.monitor.ProcessManager")
+        self.log_monitor_patch = patch("sorter.monitor.monitor.LogMonitor")
         self.MockProcessManager = self.process_manager_patch.start()
         self.MockLogMonitor = self.log_monitor_patch.start()
 
         # We also need a dummy config path
         self.config_path = pathlib.Path("dummy_config.json")
-        with patch('builtins.open', mock_open(read_data='{"services": []}')):
-            self.supervisor = Supervisor(self.config_path)
+        with patch("builtins.open", mock_open(read_data='{"services": []}')):
+            self.monitor = Monitor(self.config_path)
 
-        # Mock the manager and monitor instances on the supervisor
-        self.supervisor.process_manager = self.MockProcessManager()
-        self.supervisor.log_monitor = self.MockLogMonitor()
+        # Mock the manager and monitor instances on the monitor
+        self.monitor.process_manager = self.MockProcessManager()
+        self.monitor.log_monitor = self.MockLogMonitor()
 
     def tearDown(self):
         self.process_manager_patch.stop()
@@ -145,72 +161,128 @@ class TestSupervisorLogic(unittest.TestCase):
 
     def test_service_waits_for_dependency(self):
         """A service should go to WAITING if its dependency is not RUNNING."""
-        dep_service = Service(name="Dep1", command="c1", enabled=True, args={}, restart_attempts=0, depends_on=[], startup_delay_seconds=0)
-        dep_service.status = "STARTING" # Not running yet
+        dep_service = Service(
+            name="Dep1",
+            command="c1",
+            enabled=True,
+            args={},
+            restart_attempts=0,
+            depends_on=[],
+            startup_delay_seconds=0,
+        )
+        dep_service.status = "STARTING"  # Not running yet
 
-        main_service = Service(name="Main", command="c2", enabled=True, args={}, restart_attempts=0, depends_on=["Dep1"], startup_delay_seconds=0)
+        main_service = Service(
+            name="Main",
+            command="c2",
+            enabled=True,
+            args={},
+            restart_attempts=0,
+            depends_on=["Dep1"],
+            startup_delay_seconds=0,
+        )
         main_service.status = "STOPPED"
 
-        self.supervisor.services = [dep_service, main_service]
+        self.monitor.services = [dep_service, main_service]
 
-        self.supervisor._update_service_status(main_service)
+        self.monitor._update_service_status(main_service)
 
         self.assertEqual(main_service.status, "WAITING")
-        self.supervisor.process_manager.start_service.assert_not_called()
+        self.monitor.process_manager.start_service.assert_not_called()
 
     def test_service_starts_when_dependency_is_running(self):
         """A service should start if its dependency is RUNNING."""
-        dep_service = Service(name="Dep1", command="c1", enabled=True, args={}, restart_attempts=0, depends_on=[], startup_delay_seconds=0)
+        dep_service = Service(
+            name="Dep1",
+            command="c1",
+            enabled=True,
+            args={},
+            restart_attempts=0,
+            depends_on=[],
+            startup_delay_seconds=0,
+        )
         dep_service.status = "RUNNING"
 
-        main_service = Service(name="Main", command="c2", enabled=True, args={}, restart_attempts=0, depends_on=["Dep1"], startup_delay_seconds=0)
+        main_service = Service(
+            name="Main",
+            command="c2",
+            enabled=True,
+            args={},
+            restart_attempts=0,
+            depends_on=["Dep1"],
+            startup_delay_seconds=0,
+        )
         main_service.status = "WAITING"
 
-        self.supervisor.services = [dep_service, main_service]
+        self.monitor.services = [dep_service, main_service]
 
-        self.supervisor._update_service_status(main_service)
+        self.monitor._update_service_status(main_service)
 
-        self.supervisor.process_manager.start_service.assert_called_with(main_service)
+        self.monitor.process_manager.start_service.assert_called_with(main_service)
 
     def test_running_service_fails_and_goes_to_error(self):
         """A RUNNING service whose process has exited should go to ERROR state."""
-        service = Service(name="S1", command="c1", enabled=True, args={}, restart_attempts=1, depends_on=[], startup_delay_seconds=0)
+        service = Service(
+            name="S1",
+            command="c1",
+            enabled=True,
+            args={},
+            restart_attempts=1,
+            depends_on=[],
+            startup_delay_seconds=0,
+        )
         service.status = "RUNNING"
         # Mock the process to have exited with an error code
         service.process = MagicMock()
-        service.process.poll.return_value = 1 # Non-zero exit code
+        service.process.poll.return_value = 1  # Non-zero exit code
 
-        self.supervisor.services = [service]
-        self.supervisor._update_service_status(service)
+        self.monitor.services = [service]
+        self.monitor._update_service_status(service)
 
         self.assertEqual(service.status, "ERROR")
 
-    @patch('sorter.supervisor.supervisor.time.sleep', return_value=None)
+    @patch("sorter.monitor.monitor.time.sleep", return_value=None)
     def test_error_service_restarts(self, mock_sleep):
         """An ERROR service with remaining restarts should go to RESTARTING."""
-        service = Service(name="S1", command="c1", enabled=True, args={}, restart_attempts=3, depends_on=[], startup_delay_seconds=0)
+        service = Service(
+            name="S1",
+            command="c1",
+            enabled=True,
+            args={},
+            restart_attempts=3,
+            depends_on=[],
+            startup_delay_seconds=0,
+        )
         service.remaining_restarts = 2
         service.status = "ERROR"
 
-        self.supervisor.services = [service]
-        self.supervisor._update_service_status(service)
+        self.monitor.services = [service]
+        self.monitor._update_service_status(service)
 
         self.assertEqual(service.status, "RESTARTING")
-        self.assertEqual(service.remaining_restarts, 1) # Should be decremented
+        self.assertEqual(service.remaining_restarts, 1)  # Should be decremented
 
     def test_error_service_with_no_restarts_stays_error(self):
         """An ERROR service with no restarts left should remain in ERROR state."""
-        service = Service(name="S1", command="c1", enabled=True, args={}, restart_attempts=1, depends_on=[], startup_delay_seconds=0)
-        service.remaining_restarts = 0 # No attempts left
+        service = Service(
+            name="S1",
+            command="c1",
+            enabled=True,
+            args={},
+            restart_attempts=1,
+            depends_on=[],
+            startup_delay_seconds=0,
+        )
+        service.remaining_restarts = 0  # No attempts left
         service.status = "ERROR"
 
-        self.supervisor.services = [service]
-        self.supervisor._update_service_status(service)
+        self.monitor.services = [service]
+        self.monitor._update_service_status(service)
 
         self.assertEqual(service.status, "ERROR")
         # Ensure we didn't try to start it again
-        self.supervisor.process_manager.start_service.assert_not_called()
+        self.monitor.process_manager.start_service.assert_not_called()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

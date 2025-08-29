@@ -1,11 +1,11 @@
-# Supervisor Mode Architecture
+# Monitor Mode Architecture
 
 ## 1. Overview
-The supervisor mode is designed as a standalone module within the `sorter` application. It will be implemented in a new `sorter.supervisor` package. The architecture is centered around a main `Supervisor` class that manages the entire lifecycle of the services.
+The monitor mode is designed as a standalone module within the `sorter` application. It will be implemented in a new `sorter.monitor` package. The architecture is centered around a main `Monitor` class that manages the entire lifecycle of the services.
 
 ## 2. Core Components
 
-### 2.1. `Supervisor` Class
+### 2.1. `Monitor` Class
 This is the main class that orchestrates all operations. It will be responsible for:
 -   Parsing command-line arguments.
 -   Loading and validating the configuration file.
@@ -32,11 +32,11 @@ The Terminal User Interface will be built using Python's standard `curses` libra
 -   Displaying recent "ERROR" and "WARN" messages.
 -   Capturing keyboard input for quitting or restarting services.
 
-### 2.5. `LogManager`
+### 2.5. `LogMonitor`
 This component will handle the creation of log directories and files. It will also be responsible for tailing the log files in separate threads to watch for "ERROR" and "WARN" messages in real-time.
 
 ## 3. Concurrency Model
-The supervisor will be heavily multi-threaded to handle multiple tasks concurrently:
+The monitor will be heavily multi-threaded to handle multiple tasks concurrently:
 -   The **main thread** will handle the initial setup, start the service management loop, and wait for the TUI to exit.
 -   A **TUI thread** will be responsible for rendering the user interface at a regular interval.
 -   A **keyboard listener thread** will handle user input without blocking the TUI.

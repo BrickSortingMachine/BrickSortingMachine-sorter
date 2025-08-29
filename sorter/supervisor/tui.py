@@ -8,7 +8,6 @@ from sorter.supervisor.service import Service
 from sorter.util.time_delta_format import time_delta_format
 
 
-
 class TUI:
     """Manages rendering the terminal user interface using curses."""
 
@@ -38,7 +37,9 @@ class TUI:
             curses.init_pair(self.COLOR_RED, curses.COLOR_RED, curses.COLOR_BLACK)
             curses.init_pair(self.COLOR_YELLOW, curses.COLOR_YELLOW, curses.COLOR_BLACK)
             curses.init_pair(self.COLOR_BLUE, curses.COLOR_BLUE, curses.COLOR_BLACK)
-            curses.init_pair(self.COLOR_GRAY, curses.COLOR_WHITE, curses.COLOR_BLACK) # Bright gray
+            curses.init_pair(
+                self.COLOR_GRAY, curses.COLOR_WHITE, curses.COLOR_BLACK
+            )  # Bright gray
             curses.init_pair(self.COLOR_WHITE, curses.COLOR_WHITE, curses.COLOR_BLACK)
 
     def _get_status_color(self, status: str) -> int:
@@ -64,7 +65,8 @@ class TUI:
 
         for i, service in enumerate(services):
             y = 4 + i
-            if y >= h - 5: break  # Stop drawing if we run out of space
+            if y >= h - 5:
+                break  # Stop drawing if we run out of space
 
             status = service.display_status
             color = self._get_status_color(status)
@@ -89,7 +91,6 @@ class TUI:
 
         self.stdscr.addstr(4 + len(services), 1, "+" + "-" * (w - 3) + "+")
 
-
     def _draw_messages(self, messages: List[str], services_count: int):
         """Draws the recent messages panel."""
         h, w = self.stdscr.getmaxyx()
@@ -104,7 +105,7 @@ class TUI:
             return
 
         title = "Recent Messages"
-        self.stdscr.addstr(panel_y_start -1, 1, "+" + "-" * (w - 3) + "+")
+        self.stdscr.addstr(panel_y_start - 1, 1, "+" + "-" * (w - 3) + "+")
         self.stdscr.addstr(panel_y_start, 2, title)
 
         for i, msg in enumerate(messages):
@@ -119,11 +120,10 @@ class TUI:
             elif "WARN" in msg:
                 color_pair = self.COLOR_YELLOW
 
-            self.stdscr.addstr(y, 2, msg[:w - 4], curses.color_pair(color_pair))
+            self.stdscr.addstr(y, 2, msg[: w - 4], curses.color_pair(color_pair))
 
-        bottom_y = min(panel_y_start + 1 + len(messages) + 1, h-2)
+        bottom_y = min(panel_y_start + 1 + len(messages) + 1, h - 2)
         self.stdscr.addstr(bottom_y, 1, "+" + "-" * (w - 3) + "+")
-
 
     def draw(self, supervisor):
         """Main drawing function, called in the loop."""
@@ -132,7 +132,7 @@ class TUI:
 
         # Header
         log_path_str = f"Brick Sorter Supervisor - {supervisor.process_manager.log_dir}"
-        self.stdscr.addstr(0, 1, log_path_str[:w-2])
+        self.stdscr.addstr(0, 1, log_path_str[: w - 2])
 
         # Table
         services = supervisor.get_services()
@@ -156,11 +156,11 @@ class TUI:
 
             # Handle user input
             key = self.stdscr.getch()
-            if key == ord('q') or key == ord('Q'):
+            if key == ord("q") or key == ord("Q"):
                 supervisor.shutdown()
-            elif key == ord('r') or key == ord('R'):
+            elif key == ord("r") or key == ord("R"):
                 # This will be implemented later
                 logging.info("User requested restart of all services.")
                 supervisor.restart_all_services()
 
-            time.sleep(0.2) # Refresh rate
+            time.sleep(0.2)  # Refresh rate

@@ -34,7 +34,7 @@ class Supervisor:
         """Loads the service configuration from the JSON file."""
         logging.info(f"Loading configuration from: {self.config_path}")
         try:
-            with open(self.config_path, 'r') as f:
+            with open(self.config_path, "r") as f:
                 config_data = json.load(f)
         except FileNotFoundError:
             logging.error(f"Configuration file not found at: {self.config_path}")
@@ -50,21 +50,25 @@ class Supervisor:
 
         for service_data in service_list:
             if not service_data.get("enabled", False):
-                logging.info(f"Service '{service_data.get('name')}' is disabled. Skipping.")
+                logging.info(
+                    f"Service '{service_data.get('name')}' is disabled. Skipping."
+                )
                 continue
 
-            required_keys = ['name', 'command', 'args']
+            required_keys = ["name", "command", "args"]
             if not all(k in service_data for k in required_keys):
-                raise ValueError(f"Service config missing required keys in: {service_data}")
+                raise ValueError(
+                    f"Service config missing required keys in: {service_data}"
+                )
 
             service = Service(
-                name=service_data['name'],
-                command=service_data['command'],
-                enabled=service_data['enabled'],
-                args=service_data.get('args', {}),
-                restart_attempts=service_data.get('restart_attempts', 0),
-                depends_on=service_data.get('depends_on', []),
-                startup_delay_seconds=service_data.get('startup_delay_seconds', 0),
+                name=service_data["name"],
+                command=service_data["command"],
+                enabled=service_data["enabled"],
+                args=service_data.get("args", {}),
+                restart_attempts=service_data.get("restart_attempts", 0),
+                depends_on=service_data.get("depends_on", []),
+                startup_delay_seconds=service_data.get("startup_delay_seconds", 0),
             )
             self.services.append(service)
             logging.info(f"Loaded service: {service.name}")
@@ -101,7 +105,6 @@ class Supervisor:
         for service in self.services:
             service.status = "STOPPED"
 
-
     def _are_dependencies_met(self, service_to_check: Service) -> bool:
         """Checks if all dependencies for a given service are in the RUNNING state."""
         if not service_to_check.depends_on:
@@ -135,26 +138,46 @@ class Supervisor:
 
         elif service.status == "STARTING":
             if process_exit_code is not None:
-                logging.error(f"Service '{service.name}' exited immediately with code {process_exit_code}.")
+                logging.error(
+                    f"Service '{service.name}' exited immediately with code {process_exit_code}."
+                )
                 service.status = "ERROR"
-                self.add_message(f"ERROR: Exited immediately (code: {process_exit_code})", service.name)
-            elif service.start_time and (time.time() - service.start_time) > service.startup_delay_seconds:
-                logging.info(f"Service '{service.name}' successfully started and is now RUNNING.")
+                self.add_message(
+                    f"ERROR: Exited immediately (code: {process_exit_code})",
+                    service.name,
+                )
+            elif (
+                service.start_time
+                and (time.time() - service.start_time) > service.startup_delay_seconds
+            ):
+                logging.info(
+                    f"Service '{service.name}' successfully started and is now RUNNING."
+                )
                 service.status = "RUNNING"
 
         elif service.status == "RUNNING":
             if process_exit_code is not None:
-                logging.error(f"Service '{service.name}' exited unexpectedly with code {process_exit_code}.")
+                logging.error(
+                    f"Service '{service.name}' exited unexpectedly with code {process_exit_code}."
+                )
                 service.status = "ERROR"
-                self.add_message(f"ERROR: Exited unexpectedly (code: {process_exit_code})", service.name)
+                self.add_message(
+                    f"ERROR: Exited unexpectedly (code: {process_exit_code})",
+                    service.name,
+                )
 
         elif service.status == "ERROR":
             if service.remaining_restarts > 0 or service.restart_attempts == -1:
                 if service.restart_attempts != -1:
                     service.remaining_restarts -= 1
 
-                logging.info(f"Attempting to restart '{service.name}'. Attempts left: {service.remaining_restarts if service.restart_attempts != -1 else 'infinite'}")
-                self.add_message(f"WARN: Restarting service. Attempts left: {service.remaining_restarts}", service.name)
+                logging.info(
+                    f"Attempting to restart '{service.name}'. Attempts left: {service.remaining_restarts if service.restart_attempts != -1 else 'infinite'}"
+                )
+                self.add_message(
+                    f"WARN: Restarting service. Attempts left: {service.remaining_restarts}",
+                    service.name,
+                )
                 service.status = "RESTARTING"
             else:
                 # No more restarts. The service will remain in ERROR state.
@@ -168,7 +191,9 @@ class Supervisor:
                 self.process_manager.start_service(service)
                 self.log_monitor.start_monitoring(service)
             else:
-                logging.warning(f"Cannot restart '{service.name}', dependencies are not met. Moving to WAITING.")
+                logging.warning(
+                    f"Cannot restart '{service.name}', dependencies are not met. Moving to WAITING."
+                )
                 service.status = "WAITING"
 
     def run(self):

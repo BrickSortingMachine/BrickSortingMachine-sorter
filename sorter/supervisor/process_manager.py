@@ -10,7 +10,6 @@ import time
 from sorter.supervisor.service import Service
 
 
-
 class ProcessManager:
     """Handles the creation, monitoring, and termination of service processes."""
 
@@ -48,7 +47,6 @@ class ProcessManager:
                 # if a bool arg is false, we don't add it
                 command.pop()
 
-
         env = os.environ.copy()
         env["SESSION_SECRET"] = self.session_secret
         # Ensure real-time output from child processes
@@ -56,7 +54,7 @@ class ProcessManager:
 
         log_file_path = self.log_dir / f"{service.name}.log"
         service.log_file = log_file_path
-        log_file_handle = open(log_file_path, 'w')
+        log_file_handle = open(log_file_path, "w")
         self._log_file_handles[service.name] = log_file_handle
 
         logging.info(f"Starting service '{service.name}': {' '.join(command)}")
@@ -74,7 +72,9 @@ class ProcessManager:
             service.start_time = time.time()
             service.status = "STARTING"
         except FileNotFoundError:
-            logging.error(f"Command not found for service '{service.name}'. Is 'sorter.py' in the right path?")
+            logging.error(
+                f"Command not found for service '{service.name}'. Is 'sorter.py' in the right path?"
+            )
             service.status = "ERROR"
         except Exception as e:
             logging.error(f"Failed to start service '{service.name}': {e}")
@@ -90,7 +90,9 @@ class ProcessManager:
             service.process.terminate()
             service.process.wait(timeout=5)
         except subprocess.TimeoutExpired:
-            logging.warning(f"Service '{service.name}' did not terminate gracefully. Sending SIGKILL.")
+            logging.warning(
+                f"Service '{service.name}' did not terminate gracefully. Sending SIGKILL."
+            )
             service.process.kill()
         except Exception as e:
             logging.error(f"Error while stopping service '{service.name}': {e}")

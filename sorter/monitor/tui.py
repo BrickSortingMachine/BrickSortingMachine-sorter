@@ -2,6 +2,7 @@ from textual.app import App, ComposeResult
 from textual.widgets import DataTable, Footer, Header, RichLog
 from textual.reactive import reactive
 import time
+from rich.text import Text
 
 from sorter.util.time_delta_format import time_delta_format
 
@@ -57,13 +58,12 @@ class MonitorApp(App):
 
             style = self.get_status_style(service.display_status)
             table.add_row(
-                service.name,
+                Text(service.name, style=style),
                 str(service.pid or "N/A"),
                 service.display_status,
                 uptime_str,
                 restarts,
                 key=service.name,
-                style=style,
             )
 
         # Update messages

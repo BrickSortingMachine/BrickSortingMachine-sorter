@@ -31,3 +31,4 @@ isort
 pre-commit
 mkdocs
 mkdocs-material
+textual

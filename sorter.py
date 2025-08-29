@@ -132,6 +132,23 @@ def run_monitor(args, sub_parser):
     m.run()
 
 
+def run_broker(args, sub_parser):
+    from sorter.broker.mqtt_broker import MqttBrokerThread
+
+    broker_thread = MqttBrokerThread(host=args.host, port=args.port)
+    broker_thread.start()
+    logging.info(f"MQTT broker starting on {args.host}:{args.port}")
+
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        logging.info("Stopping MQTT broker...")
+        broker_thread.stop()
+        broker_thread.join(timeout=5)
+        logging.info("MQTT broker stopped.")
+
+
 if __name__ == "__main__":
     # parse command line arguments
     parser = sorter.util.argument_parser.ArgumentParser(description="Sorter")
@@ -245,6 +262,16 @@ if __name__ == "__main__":
         "--config", required=True, help="Path to the monitor config file"
     )
 
+    # broker
+    broker_parser = subparsers.add_parser("broker")
+    broker_parser.set_defaults(command="broker")
+    broker_parser.add_argument(
+        "--host", default="0.0.0.0", help="Host to bind the broker to."
+    )
+    broker_parser.add_argument(
+        "--port", default=1883, type=int, help="Port to bind the broker to."
+    )
+
     args = parser.parse_args()
 
     _ = sorter.util.config_handler.ConfigHandler()
@@ -270,6 +297,9 @@ if __name__ == "__main__":
 
     elif args.command.lower() == "run":
         run_monitor(args, monitor_parser)
+
+    elif args.command.lower() == "broker":
+        run_broker(args, broker_parser)
 
     # standard help
     else:

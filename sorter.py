@@ -125,6 +125,13 @@ def run_vision(args, sub_parser):
         c.stop()
 
 
+def run_supervisor(args, sub_parser):
+    from sorter.supervisor.supervisor import Supervisor
+
+    s = Supervisor(pathlib.Path(args.config))
+    s.run()
+
+
 if __name__ == "__main__":
     # parse command line arguments
     parser = sorter.util.argument_parser.ArgumentParser(description="Sorter")
@@ -231,6 +238,13 @@ if __name__ == "__main__":
         help="No network connection",
     )
 
+    # supervisor
+    supervisor_parser = subparsers.add_parser("supervisor")
+    supervisor_parser.set_defaults(command="supervisor")
+    supervisor_parser.add_argument(
+        "--config", required=True, help="Path to the supervisor config file"
+    )
+
     args = parser.parse_args()
 
     _ = sorter.util.config_handler.ConfigHandler()
@@ -253,6 +267,9 @@ if __name__ == "__main__":
 
     elif args.command.lower() == "serial":
         run_serial(args, serial_parser)
+
+    elif args.command.lower() == "supervisor":
+        run_supervisor(args, supervisor_parser)
 
     # standard help
     else:

@@ -15,3 +15,4 @@ grbl-streamer==2.0.2
 mkdocs
 mkdocs-material
 black
+textual

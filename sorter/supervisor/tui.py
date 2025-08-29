@@ -8,6 +8,7 @@ from sorter.supervisor.service import Service
 from sorter.util.time_delta_format import time_delta_format
 
 
+
 class TUI:
     """Manages rendering the terminal user interface using curses."""
 

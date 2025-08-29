@@ -1,4 +1,3 @@
-import curses
 import json
 import logging
 import pathlib
@@ -9,20 +8,19 @@ from typing import List
 from sorter.monitor.log_monitor import LogMonitor
 from sorter.monitor.process_manager import ProcessManager
 from sorter.monitor.service import Service
-from sorter.monitor.tui import TUI
+from sorter.monitor.tui import MonitorApp
 
 
 class Monitor:
     """
     The main class for the monitor mode. It loads the configuration,
-    manages the lifecycle of services, and controls the TUI.
+    manages the lifecycle of services, and provides data to the TUI.
     """
 
     def __init__(self, config_path: pathlib.Path):
         self.config_path = config_path
         self.services: List[Service] = []
         self.process_manager = ProcessManager()
-        self.tui = TUI()
         self.log_monitor = LogMonitor(self)
         self._stop_event = threading.Event()
         self.messages: List[str] = []
@@ -203,29 +201,26 @@ class Monitor:
                 service.status = "WAITING"
 
     def run(self):
-        """Starts the monitor, including the TUI and control loop."""
+        """Starts the monitor, the control loop, and the Textual TUI."""
         if not self.services:
             logging.warning("No enabled services to run. Exiting.")
             return
 
+        # The control loop still runs in a background thread to manage services
         control_thread = threading.Thread(target=self._control_loop)
         control_thread.daemon = True
         control_thread.start()
 
-        try:
-            curses.wrapper(self.tui.run, self)
-        except curses.error as e:
-            logging.error(f"TUI failed with a curses error: {e}")
-            print("TUI failed. Your terminal might be too small or not support colors.")
-        except Exception as e:
-            logging.critical(f"Monitor crashed: {e}", exc_info=True)
-        finally:
-            if not self.is_shutting_down():
-                self.shutdown()
+        # Create and run the Textual app
+        app = MonitorApp(monitor=self)
+        app.run()
 
-            logging.info("Waiting for control loop to finish...")
-            control_thread.join(timeout=2)
+        # After the app exits (e.g., user presses "q"), ensure everything is stopped.
+        # The shutdown is initiated from the TUI action, but we ensure it's set here.
+        self.shutdown()
+        logging.info("Waiting for control loop to finish...")
+        control_thread.join(timeout=2)
 
-            logging.info("Stopping all services...")
-            self.process_manager.stop_all(self.services)
-            logging.info("Shutdown complete.")
+        logging.info("Stopping all services...")
+        self.process_manager.stop_all(self.services)
+        logging.info("Shutdown complete.")

@@ -122,7 +122,7 @@ class ObjectDetector:
         fg_mask *= self.overall_mask
 
         # close objects
-        kernel = np.ones((13, 13), np.uint8)
+        kernel = np.ones((25, 25), np.uint8)
         closing = cv2.morphologyEx(fg_mask, cv2.MORPH_CLOSE, kernel)
         if enable_viz_mask:
             debug_viz_mask_after_close = closing.copy()

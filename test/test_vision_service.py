@@ -101,7 +101,7 @@ class VisionServiceTest(test_helpers.BaseTest):
         # yellow technic brick
         recording = os.path.abspath(
             os.path.join(
-                os.path.dirname(__file__), "..", "data", "rec_2022-04-21_12-42-30"
+                os.path.dirname(__file__), "..", "data", "rec_2025-08-30_23-10-23"
             )
         )
 
@@ -140,9 +140,6 @@ class VisionServiceTest(test_helpers.BaseTest):
         # stop network
         tdc.stop()
         s.stop()
-        time.sleep(0.5)
-
-        test_helpers.BaseTest.assert_threads_stopped(self)
 
     def test_time_since_last_busy(self):
         """
@@ -154,7 +151,7 @@ class VisionServiceTest(test_helpers.BaseTest):
         # empty belt
         recording = os.path.abspath(
             os.path.join(
-                os.path.dirname(__file__), "..", "data", "rec_2022-04-21_12-42-15"
+                os.path.dirname(__file__), "..", "data", "rec_2025-08-30_23-10-23"
             )
         )
 

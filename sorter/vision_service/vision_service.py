@@ -398,7 +398,7 @@ class VisionService:
             msg += f"  LB: {sec_since_last_busy:03.0f}s"
             # msg += f'  Frame: {self.collect_loop_frame_index:05d}'
             msg += f"  HM: {sorter.util.time_delta_format.time_delta_format(self.last_received_hour_meter_sec)}"
-            msg += f"  PPM: {self.collect_loop_average_part_per_sec*60:.1f}"
+            msg += f"  PPM: {self.collect_loop_average_part_per_sec * 60:.1f}"
             cv2.putText(
                 frame_viz,
                 msg,
@@ -608,7 +608,7 @@ class VisionService:
                 else f'{"-":^10}'
             )
             c += (
-                f" {item.probability*100:3.0f}%"
+                f" {item.probability * 100:3.0f}%"
                 if item.probability is not None
                 else f' {"-":^4}'
             )

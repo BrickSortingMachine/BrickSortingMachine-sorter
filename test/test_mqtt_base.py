@@ -1,7 +1,6 @@
 import logging
 import os
 import secrets
-import socket
 import time
 
 import test_helpers

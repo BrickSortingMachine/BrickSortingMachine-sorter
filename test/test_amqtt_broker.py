@@ -98,8 +98,6 @@ class AmqttBrokerThread(threading.Thread):
             tasks = asyncio.all_tasks(loop=self.loop)
             for task in tasks:
                 task.cancel()
-            self.loop.run_until_complete(
-                asyncio.gather(*tasks, return_exceptions=True)
-            )
+            self.loop.run_until_complete(asyncio.gather(*tasks, return_exceptions=True))
         finally:
             self.loop.close()

@@ -3,7 +3,6 @@ import logging
 import os
 import tempfile
 import threading
-from pathlib import Path
 
 from amqtt.broker import Broker
 from passlib.hash import sha512_crypt
@@ -91,7 +90,9 @@ class MqttBrokerThread(threading.Thread):
             try:
                 self._password_file.close()
                 os.remove(self._password_file.name)
-                logging.info(f"Removed temporary password file: {self._password_file.name}")
+                logging.info(
+                    f"Removed temporary password file: {self._password_file.name}"
+                )
             except Exception as e:
                 logging.error(f"Error cleaning up password file: {e}")
         try:

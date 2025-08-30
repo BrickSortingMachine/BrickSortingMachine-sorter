@@ -1,8 +1,9 @@
-from textual.app import App, ComposeResult
-from textual.widgets import DataTable, Footer, Header, RichLog
-from textual.reactive import reactive
 import time
+
 from rich.text import Text
+from textual.app import App, ComposeResult
+from textual.reactive import reactive
+from textual.widgets import DataTable, Footer, Header, RichLog
 
 from sorter.util.time_delta_format import time_delta_format
 

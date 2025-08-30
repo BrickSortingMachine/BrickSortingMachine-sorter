@@ -305,6 +305,7 @@ if __name__ == "__main__":
         required=False,
         action="store_true",
         help="Display grbl-streamer log messages",
+    )
 
     # run/monitor mode
     monitor_parser = subparsers.add_parser("run")

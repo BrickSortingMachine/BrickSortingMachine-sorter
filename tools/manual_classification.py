@@ -51,14 +51,16 @@ def send_classification_result(object_class: str):
     ]
     high_list = low_list
 
-    msg, msg_mqtt = sorter.classification_service.classification_service.ClassificationService.compose_classification_result_message(
-        object_id=0,
-        predicted_class=object_class,
-        probability=1,
-        uniqueness=1000,
-        average_process_time_sec=0.1,
-        low_list=low_list,
-        high_list=high_list,
+    msg, msg_mqtt = (
+        sorter.classification_service.classification_service.ClassificationService.compose_classification_result_message(
+            object_id=0,
+            predicted_class=object_class,
+            probability=1,
+            uniqueness=1000,
+            average_process_time_sec=0.1,
+            low_list=low_list,
+            high_list=high_list,
+        )
     )
     logging.info(f"Sending msg {msg} ...")
     c.send_msg(msg)

@@ -1,12 +1,12 @@
 import logging
+import random
 import threading
 import time
-import random
 
 from grbl_streamer import GrblStreamer
 
-import sorter.network.tcp_client
 import sorter.classification_service.classification_service
+import sorter.network.tcp_client
 
 event_grbl_rx_buffer_percent_zero = threading.Event()
 
@@ -27,9 +27,7 @@ def wait(timeout=5):
     if not wait_event.is_set():
         result = wait_event.wait(timeout)
         if not result:
-            raise Exception(
-                f"Timeout waiting for event: {wait_event_str}"
-            )
+            raise Exception(f"Timeout waiting for event: {wait_event_str}")
 
 
 def grbl_callback(eventstring, data, verbose):
@@ -66,17 +64,6 @@ class ASRSTcpClient(sorter.network.tcp_client.TcpClient):
             if part_list[0] == "CLR":
                 object_id = int(part_list[1])
                 predicted_class = part_list[2]
-                probability = float(part_list[3])
-                uniqueness = float(part_list[4])
-                average_process_time_sec = float(part_list[5])
-                pred_low_serialized = part_list[6]
-                pred_high_serialized = part_list[7]
-                pred_low_list = sorter.classification_service.classification_service.ClassificationService.deserialize(
-                    pred_low_serialized
-                )
-                pred_high_list = sorter.classification_service.classification_service.ClassificationService.deserialize(
-                    pred_high_serialized
-                )
                 logging.info(
                     f"Received classification result - id: {object_id} pc: {predicted_class}"
                     " prob: {probability*100:.0f}% uniqueness: {uniqueness:.0f}"
@@ -116,7 +103,7 @@ class ASRSService:
         # GRBl connection
         self.disable_device = disable_device
         self.device_path = "/dev/serial/by-path/pci-0000:00:14.0-usb-0:2:1.0-port0"
-        self.grbl = GrblStreamer(lambda e, *data: grbl_callback(e,data,verbose))
+        self.grbl = GrblStreamer(lambda e, *data: grbl_callback(e, data, verbose))
         self.grbl.setup_logging()
 
         # simulation mode
@@ -140,7 +127,7 @@ class ASRSService:
                 logging.warning(f"{i} ...")
                 time.sleep(1)
             self.homing()
-        
+
         logging.info("Service ready for usage.")
 
     def stop(self):
@@ -192,21 +179,21 @@ class ASRSService:
 
         # retrival
         self.grbl.write(f"G0X{x}Y{y+lowered}")
-        self.grbl.write(f"G0X{x}Y{y+lowered}Z-10") # move in
+        self.grbl.write(f"G0X{x}Y{y+lowered}Z-10")  # move in
         self.grbl.write(f"G1X{x}Y{y}F5000")  # move up slow
-        self.grbl.write(f"G0X{x}Y{y}Z0") # move out
+        self.grbl.write(f"G0X{x}Y{y}Z0")  # move out
 
         # move to loading position
         self.grbl.write(f"G0X{home_x}Y{home_y}")
-        self.grbl.write(f"G0X{home_x}Y{home_y}Z-20") # move in
-        self.grbl.write(f"G0X{home_x}Y{home_y}Z0") # move out
-        
+        self.grbl.write(f"G0X{home_x}Y{home_y}Z-20")  # move in
+        self.grbl.write(f"G0X{home_x}Y{home_y}Z0")  # move out
+
         # storage
         self.grbl.write(f"G0X{x}Y{y}")
-        self.grbl.write(f"G0X{x}Y{y}Z-10") # move in
+        self.grbl.write(f"G0X{x}Y{y}Z-10")  # move in
         self.grbl.write(f"G1X{x}Y{y+lowered}F5000")  # move up slow
-        self.grbl.write(f"G0X{x}Y{y+lowered}Z0") # move out
-        
+        self.grbl.write(f"G0X{x}Y{y+lowered}Z0")  # move out
+
         # trigger motion
         if not self.disable_device:
             wait_prepare("on_standstill", None)

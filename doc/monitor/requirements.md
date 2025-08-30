@@ -99,27 +99,27 @@ The monitor shall present a continuously updating TUI for at-a-glance monitoring
 
 ### 6.1. TUI Mockup
 ```
- Brick Sorter Monitor - logs/run_2025-08-29_15-13-00
-+------------------------+--------+----------+---------+----------+
-| Service                | PID    | Status   | Uptime  | Restarts |
-+------------------------+--------+----------+---------+----------+
-| Controller             | 10451  | RUNNING  | 1h 13m  | 3/3      |
-| Serial-Service         | 10452  | WAITING  | N/A     | 3/3      |
-| Vision-Service         | 10454  | ERROR    | 5m 14s  | 0/1      |
-| Classification-Service | 10453  | STARTING | 5s      | 1/1      |
-+------------------------+--------+----------+---------+----------+
-| Recent Messages (Last 8)                                         |
-+------------------------------------------------------------------+
-| [Vision-Service] ERROR: Camera disconnected unexpectedly.        |
-| [Controller]     WARN: Vibration feeder 2 reported high temp.    |
-| [Vision-Service] WARN: Low light levels detected.                |
-| [Serial-Service] WARN: Checksum mismatch on received data.       |
-| [Controller]     ERROR: Main belt motor stalled.                 |
-|                                                                  |
-|                                                                  |
-|                                                                  |
-+------------------------------------------------------------------+
- Q: Quit | R: Restart All
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Brick Sorter Monitor                                             ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ Service                │ PID    │ Status   │ Uptime  │ Restarts │
+├────────────────────────┼────────┼──────────┼─────────┼──────────┤
+│ Controller             │ 10451  │ RUNNING  │ 1h 13m  │ 3/3      │
+│ Serial-Service         │ 10452  │ WAITING  │ N/A     │ 3/3      │
+│ Vision-Service         │ 10454  │ ERROR    │ 5m 14s  │ 0/1      │
+│ Classification-Service │ 10453  │ STARTING │ 5s      │ 1/1      │
+├────────────────────────┴────────┴──────────┴─────────┴──────────┤
+│ [Vision-Service] ERROR: Camera disconnected unexpectedly.        │
+│ [Controller]     WARN: Vibration feeder 2 reported high temp.    │
+│ [Vision-Service] WARN: Low light levels detected.                │
+│ [Serial-Service] WARN: Checksum mismatch on received data.       │
+│ [Controller]     ERROR: Main belt motor stalled.                 │
+│                                                                  │
+│                                                                  │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+│ Quit: Q | Restart All: R                                         │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
 ### 6.2. TUI Components

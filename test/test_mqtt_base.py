@@ -56,7 +56,7 @@ class MqttTestCase(test_helpers.BaseTest):
             self.broker_thread.join(timeout=5)
 
             if self.broker_thread.is_alive():
-                logging.warning(
+                raise TimeoutError(
                     "(tearDown) WARNING: Timed out waiting for broker thread to stop."
                 )
             else:
@@ -66,6 +66,6 @@ class MqttTestCase(test_helpers.BaseTest):
         if "SESSION_SECRET" in os.environ:
             del os.environ["SESSION_SECRET"]
 
-        time.sleep(2)
+        time.sleep(0.5)
 
         self.assert_threads_stopped()

@@ -4,7 +4,7 @@ import secrets
 import time
 
 import test_helpers
-from test_amqtt_broker import AmqttBrokerThread
+from sorter.broker.mqtt_broker import MqttBrokerThread
 
 
 class MqttTestCase(test_helpers.BaseTest):
@@ -27,8 +27,11 @@ class MqttTestCase(test_helpers.BaseTest):
         session_secret = secrets.token_hex(16)
         os.environ["SESSION_SECRET"] = session_secret
 
-        self.broker_thread = AmqttBrokerThread(
-            host=self.broker_host, port=self.broker_port, session_secret=session_secret
+        self.broker_thread = MqttBrokerThread(
+            host=self.broker_host,
+            port=self.broker_port,
+            session_secret=session_secret,
+            sys_interval=0,
         )
         self.broker_thread.start()
 

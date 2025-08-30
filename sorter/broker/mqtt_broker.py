@@ -16,16 +16,26 @@ class MqttBrokerThread(threading.Thread):
     A thread that runs an aMQTT Broker instance.
     """
 
-    def __init__(self, host="0.0.0.0", port=1883):
+    def __init__(
+        self,
+        host="0.0.0.0",
+        port=1883,
+        session_secret=None,
+        sys_interval=10,
+    ):
         super().__init__(daemon=True)
         self.host = host
         self.port = port
         self._password_file = None
 
-        session_secret = os.environ.get("SESSION_SECRET")
+        if session_secret is None:
+            session_secret = os.environ.get("SESSION_SECRET")
+
         if not session_secret:
-            logging.error("SESSION_SECRET environment variable not set.")
-            raise ValueError("SESSION_SECRET environment variable not set.")
+            logging.error("SESSION_SECRET not provided or set as environment variable.")
+            raise ValueError(
+                "SESSION_SECRET not provided or set as environment variable."
+            )
 
         self._password_file = tempfile.NamedTemporaryFile(mode="w+", delete=False)
         hashed_password = sha512_crypt.hash(session_secret)
@@ -36,7 +46,7 @@ class MqttBrokerThread(threading.Thread):
             "listeners": {
                 "default": {"type": "tcp", "bind": f"{self.host}:{self.port}"}
             },
-            "sys_interval": 10,
+            "sys_interval": sys_interval,
             "topic-check": {"enabled": False},
             "plugins": {
                 "amqtt.plugins.authentication.FileAuthPlugin": {

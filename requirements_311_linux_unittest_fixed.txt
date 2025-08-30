@@ -16,3 +16,4 @@ mkdocs
 mkdocs-material
 black
 textual
+passlib

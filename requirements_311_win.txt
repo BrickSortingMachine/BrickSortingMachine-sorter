@@ -25,3 +25,4 @@ defusedxml
 pydantic
 mkdocs
 mkdocs-material
+passlib

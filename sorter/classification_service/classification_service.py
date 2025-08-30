@@ -2,6 +2,7 @@ import base64
 import datetime
 import json
 import logging
+import os
 import pathlib
 import threading
 import time
@@ -100,6 +101,11 @@ class ClassificationService:
             )
             self.mqtt_client.on_connect = self.on_mqtt_connect
             self.mqtt_client.on_message = self.on_mqtt_message
+
+            session_secret = os.environ.get("SESSION_SECRET")
+            if session_secret:
+                self.mqtt_client.username_pw_set("sorter", session_secret)
+
             self.mqtt_client.will_set(
                 "bricksortingmachine/classification/status", "offline", 1, True
             )

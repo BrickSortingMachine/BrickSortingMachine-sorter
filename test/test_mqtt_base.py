@@ -1,4 +1,7 @@
 import logging
+import os
+import secrets
+import socket
 import time
 
 import test_helpers
@@ -22,8 +25,11 @@ class MqttTestCase(test_helpers.BaseTest):
 
         self.broker_host = "localhost"
         self.broker_port = 1884
+        session_secret = secrets.token_hex(16)
+        os.environ["SESSION_SECRET"] = session_secret
+
         self.broker_thread = AmqttBrokerThread(
-            host=self.broker_host, port=self.broker_port
+            host=self.broker_host, port=self.broker_port, session_secret=session_secret
         )
         self.broker_thread.start()
 
@@ -48,13 +54,16 @@ class MqttTestCase(test_helpers.BaseTest):
             self.broker_thread.join(timeout=5)
 
             if self.broker_thread.is_alive():
-                logging.info(
+                logging.warning(
                     "(tearDown) WARNING: Timed out waiting for broker thread to stop."
                 )
             else:
                 logging.info("(tearDown) Broker stopped and thread joined.")
         self.broker_thread = None
 
-        time.sleep(0.5)
+        if "SESSION_SECRET" in os.environ:
+            del os.environ["SESSION_SECRET"]
+
+        time.sleep(2)
 
         self.assert_threads_stopped()

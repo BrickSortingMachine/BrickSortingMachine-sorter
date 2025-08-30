@@ -22,6 +22,11 @@ class MqttTestCase(test_helpers.BaseTest):
         """
         self.setup_logging()
 
+        # reduce amqtt debug logging
+        logging.getLogger("amqtt").setLevel(logging.WARNING)
+        logging.getLogger("amqtt.broker").setLevel(logging.WARNING)
+        logging.getLogger("transitions.core").setLevel(logging.WARNING)
+
         self.broker_host = "localhost"
         self.broker_port = 1884
         session_secret = secrets.token_hex(16)

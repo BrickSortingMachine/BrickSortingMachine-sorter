@@ -34,9 +34,9 @@ def create_mask(shape, A, B):
 
 
 def blit_img(dst, src, offset_x, offset_y):
-    dst[
-        offset_y : (offset_y + src.shape[0]), offset_x : (offset_x + src.shape[1])
-    ] = src
+    dst[offset_y : (offset_y + src.shape[0]), offset_x : (offset_x + src.shape[1])] = (
+        src
+    )
 
 
 class ObjectDetector:
@@ -122,7 +122,7 @@ class ObjectDetector:
         fg_mask *= self.overall_mask
 
         # close objects
-        kernel = np.ones((13, 13), np.uint8)
+        kernel = np.ones((25, 25), np.uint8)
         closing = cv2.morphologyEx(fg_mask, cv2.MORPH_CLOSE, kernel)
         if enable_viz_mask:
             debug_viz_mask_after_close = closing.copy()

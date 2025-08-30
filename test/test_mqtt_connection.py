@@ -1,4 +1,5 @@
 import logging
+import os
 import threading
 import time
 
@@ -28,6 +29,7 @@ class TestMyServiceCommunication(test_mqtt_base.MqttTestCase):
             client.subscribe("my/test/topic")
 
         subscriber.on_connect = on_subscriber_connect
+        subscriber.username_pw_set("sorter", os.environ.get("SESSION_SECRET"))
         subscriber.connect(self.broker_host, self.broker_port)
         subscriber.loop_start()
 
@@ -35,6 +37,7 @@ class TestMyServiceCommunication(test_mqtt_base.MqttTestCase):
         publisher = mqtt.Client(
             mqtt.CallbackAPIVersion.VERSION2,
         )
+        publisher.username_pw_set("sorter", os.environ.get("SESSION_SECRET"))
         publisher.connect(self.broker_host, self.broker_port)
         publisher.loop_start()
         publisher.publish("my/test/topic", "hello world", qos=2)
@@ -89,6 +92,7 @@ class TestMyServiceCommunication(test_mqtt_base.MqttTestCase):
                 client.subscribe("bricksortingmachine/classification/status")
 
         subscriber.on_connect = subscriber_on_connect
+        subscriber.username_pw_set("sorter", os.environ.get("SESSION_SECRET"))
         subscriber.connect(self.broker_host, self.broker_port)
         subscriber.loop_start()
 
@@ -97,6 +101,7 @@ class TestMyServiceCommunication(test_mqtt_base.MqttTestCase):
             mqtt.CallbackAPIVersion.VERSION2,
         )
         publisher.on_connect = on_mqtt_connect
+        publisher.username_pw_set("sorter", os.environ.get("SESSION_SECRET"))
         publisher.will_set(
             "bricksortingmachine/classification/status", "offline", 1, True
         )

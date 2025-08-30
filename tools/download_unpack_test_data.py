@@ -79,7 +79,7 @@ if __name__ == "__main__":
         # hash from file content
         actual_hash = sorter.util.file_hash.file_hash(str(file_path))
         if specified_hash == actual_hash:
-            logging.info("Hash verified to be correct.")
+            logging.info("Hash verified to be correct 🆗")
             pass
         else:
             logging.error(" ")

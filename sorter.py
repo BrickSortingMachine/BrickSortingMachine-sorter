@@ -148,6 +148,30 @@ def run_vision(args, sub_parser):
         c.stop()
 
 
+def run_monitor(args, sub_parser):
+    from sorter.monitor.monitor import Monitor
+
+    m = Monitor(pathlib.Path(args.config))
+    m.run()
+
+
+def run_broker(args, sub_parser):
+    from sorter.broker.mqtt_broker import MqttBrokerThread
+
+    broker_thread = MqttBrokerThread(host=args.host, port=args.port)
+    broker_thread.start()
+    logging.info(f"MQTT broker starting on {args.host}:{args.port}")
+
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        logging.info("Stopping MQTT broker...")
+        broker_thread.stop()
+        broker_thread.join(timeout=5)
+        logging.info("MQTT broker stopped.")
+
+
 if __name__ == "__main__":
     # parse command line arguments
     parser = sorter.util.argument_parser.ArgumentParser(description="Sorter")
@@ -281,6 +305,22 @@ if __name__ == "__main__":
         required=False,
         action="store_true",
         help="Display grbl-streamer log messages",
+
+    # run/monitor mode
+    monitor_parser = subparsers.add_parser("run")
+    monitor_parser.set_defaults(command="run")
+    monitor_parser.add_argument(
+        "--config", required=True, help="Path to the monitor config file"
+    )
+
+    # broker
+    broker_parser = subparsers.add_parser("broker")
+    broker_parser.set_defaults(command="broker")
+    broker_parser.add_argument(
+        "--host", default="0.0.0.0", help="Host to bind the broker to."
+    )
+    broker_parser.add_argument(
+        "--port", default=1883, type=int, help="Port to bind the broker to."
     )
 
     args = parser.parse_args()
@@ -308,6 +348,12 @@ if __name__ == "__main__":
 
     elif args.command.lower() == "serial":
         run_serial(args, serial_parser)
+
+    elif args.command.lower() == "run":
+        run_monitor(args, monitor_parser)
+
+    elif args.command.lower() == "broker":
+        run_broker(args, broker_parser)
 
     # standard help
     else:

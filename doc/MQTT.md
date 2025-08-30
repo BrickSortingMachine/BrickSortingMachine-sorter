@@ -31,7 +31,7 @@ All topics related to this application are nested under this root namespace.
 
 ---
 
-### 🌳 `bricksortingmachine/vision/`
+### `bricksortingmachine/vision/`
 
 Topics related to the `vision_service`.
 
@@ -61,7 +61,7 @@ Topics related to the `vision_service`.
 
 ---
 
-### 🌳 `bricksortingmachine/classification/`
+### `bricksortingmachine/classification/`
 
 Topics for the classification workflow.
 
@@ -107,7 +107,7 @@ Topics for the classification workflow.
 
 ---
 
-### 🌳 `bricksortingmachine/notification/`
+### `bricksortingmachine/notification/`
 
 Topics related to the `notification_service`.
 
@@ -137,7 +137,7 @@ Topics related to the `notification_service`.
 
 ---
 
-### 🌳 `bricksortingmachine/serial/`
+### `bricksortingmachine/serial/`
 
 Topics related to the `serial_service`.
 
@@ -152,7 +152,7 @@ Topics related to the `serial_service`.
 
 ---
 
-### 🌳 `bricksortingmachine/controller/`
+### `bricksortingmachine/controller/`
 
 Topics for commands and telemetry managed by the central `machine_controller`.
 

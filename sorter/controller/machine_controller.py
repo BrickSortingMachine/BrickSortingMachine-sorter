@@ -209,18 +209,22 @@ class MachineControllerCommandHandler(sorter.network.tcp_server.RequestHandler):
             )
 
             # fwd to vision
-            ns = self.tcp_server.get_handler_by_name("VisionService")
-            if ns is None:
+            vs = self.tcp_server.get_handler_by_name("VisionService")
+            if vs is None:
                 logging.warning("Received CLF request but VisionService not connected")
-
             else:
                 # fwd message
-                ns.sendall(message)
+                vs.sendall(message)
 
             # fwd to serial
             ss = self.tcp_server.get_handler_by_name("SerialService")
             if ss is not None:
                 ss.sendall(message)
+
+            # fwd to asrs
+            asrs = self.tcp_server.get_handler_by_name("ASRSService")
+            if asrs is not None:
+                asrs.sendall(message)
 
         # NTF - Notification (fwd to notification service)
         elif command == b"NTF":

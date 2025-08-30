@@ -131,16 +131,23 @@ class TcpClient:
                 connection_successful = True
                 self.connected = True
 
-            except (ConnectionRefusedError, TimeoutError):
+            except (ConnectionRefusedError, TimeoutError, OSError) as e:
                 # connect failed
                 if not self.retry_connection:
-                    raise Exception(
-                        "Client connection to server failed and retrying is disabled"
+                    logging.error(
+                        "Client connection to server '%s:%s' failed: %s. Retrying is disabled.",
+                        self.host,
+                        self.port,
+                        e,
                     )
+                    raise e
                 else:
                     logging.warning(
-                        "Client connection failed - waiting for attempt %d ..."
-                        % retry_count
+                        "Client connection to '%s:%s' failed: %s. Retrying attempt %d ...",
+                        self.host,
+                        self.port,
+                        e,
+                        retry_count,
                     )
                     time.sleep(0.5)
                 retry_count += 1

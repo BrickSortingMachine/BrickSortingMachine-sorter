@@ -346,7 +346,7 @@ class VisionService:
         if self.collect_loop_low_fps_frame_count > 60:
             logging.error(
                 f"Triggering Soft-EStop: Framerate too low for {self.collect_loop_low_fps_frame_count} frames"
-                " - will miss part positions: {self.collect_loop_smooth_fps:.2f}fps"
+                f" - will miss part positions: {self.collect_loop_smooth_fps:.2f}fps (min: {self.min_fps} fps)"
             )
             self.soft_estop_enabled = True
         if not self.enable_visualization and self.collect_loop_frame_index % 30 == 0:

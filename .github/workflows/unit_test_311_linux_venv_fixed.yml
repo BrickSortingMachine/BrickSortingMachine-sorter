@@ -36,6 +36,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements_311_linux_unittest_fixed.txt
 
+    - name: Copy config
+      run: cp config.json.example config.json
+
     - name: Build documentation with MkDocs
       run: |
         # Assumes your mkdocs.yml is at the root and its 'docs_dir' is set to 'doc'

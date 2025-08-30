@@ -1,3 +1,9 @@
 {
-    "vision_service_win32_scp_target": ""
+    "vision_service_win32_scp_target": "",
+    "serial_exclude_by_path": [
+        "pci-0000:00:14.0-usb-0:3.4.4:1.0-port0"
+    ],
+    "serial_exclude_by_id": [
+        "usb-Arduino__www.arduino.cc__Arduino_Mega_2560_7583231313835160C170-if00"
+    ]
 }

@@ -36,7 +36,8 @@ If you want to build a LEGO® sorting machine yourself, I suggest to start with 
 ## Installation
 
 Prerequisites:
-- [Python 3.11](https://www.python.org)
+- Python >=3.5.3 for machine controller
+- Python 3.11 for vision, classification and other services
 - v4l-utils
 
 Setup a virtual environment and install package dependencies:

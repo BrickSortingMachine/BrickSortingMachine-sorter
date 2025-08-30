@@ -20,7 +20,7 @@ class BaseTest(unittest.TestCase):
                 raise Exception(
                     f"Thread with name {thread.name} still running at end of test (will cause subsequent hidden failures since unittest run in same process)."
                 )
-        logging.info("All threads stopped ✔")
+        logging.info("All threads stopped ☀️")
 
     def setup_logging(self):
         """

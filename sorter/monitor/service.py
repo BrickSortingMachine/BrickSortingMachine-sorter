@@ -1,7 +1,7 @@
 import dataclasses
 import pathlib
 import subprocess
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
 
 
 @dataclasses.dataclass

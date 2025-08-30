@@ -2,11 +2,11 @@ import json
 import pathlib
 import sys
 import unittest
-from unittest.mock import MagicMock, patch, mock_open
+from unittest.mock import MagicMock, mock_open, patch
 
 from sorter.monitor.monitor import Monitor
-from sorter.monitor.service import Service
 from sorter.monitor.process_manager import ProcessManager
+from sorter.monitor.service import Service
 
 
 class TestMonitor(unittest.TestCase):

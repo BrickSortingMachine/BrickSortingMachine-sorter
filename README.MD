@@ -8,7 +8,7 @@ A modular software stack for fully automated LEGO® sorting machines.
 
 </div>
 
-This project is heavily inspired by numerous preceding LEGO® sorting machines, I'd like to give credit [in this post](https://medium.com/@bricksortingmachine/lego-sorting-machine-overview-d390645759f9). For background information visit the [new blog](https://bricksortingmachine.com), [old blog](https://medium.com/@bricksortingmachine)
+This project is heavily inspired by numerous preceding LEGO® sorting machines, I'd like to give credit [in this post](https://bricksortingmachine.com/exploring-lego-sorting-machines-a-survey-of-designs). For background information visit the [new blog](https://bricksortingmachine.com), [old blog](https://medium.com/@bricksortingmachine)
 or [YouTube channel](https://www.youtube.com/@BrickSortingMachine).
 
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/BrickSortingMachine/BrickSortingMachine-sorter/.github/workflows/UnitTest.yml?branch=main&logo=github)](https://github.com/BrickSortingMachine/BrickSortingMachine-sorter/actions)

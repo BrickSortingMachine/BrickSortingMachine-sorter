@@ -2,16 +2,14 @@ import json
 import logging
 import os
 import pathlib
-import time
-import unittest
 import threading
+import time
 
 import test_helpers
 
 import sorter.network.tcp_server
 import sorter.util.catch_all_thread_exception
 import sorter.vision_service.vision_service
-
 
 belt_busy_evt = threading.Event()
 belt_busy_frame_index = None
@@ -39,8 +37,7 @@ class DummyCommandHandler(sorter.network.tcp_server.RequestHandler):
 
 
 class VisionServiceTest(test_helpers.BaseTest):
-    test_data_folder = os.path.abspath(
-         os.path.join(os.path.dirname(__file__), "data"))
+    test_data_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), "data"))
 
     def test_general(self):
         """
@@ -246,11 +243,11 @@ class VisionServiceTest(test_helpers.BaseTest):
             if frame_index == 120:
                 msg = (
                     "CLR 0 plate1x 1 100 1.218174 "
-              "W3siY2xhc3MiOiAicGxhdGUxeCIsICJwcm9iYWJpbGl0eSI6IDF9LCB7ImNsYXNzIjogImJyaWNrMXgiLCAi"
-              "cHJvYmFiaWxpdHkiOiAwfSwgeyJjbGFzcyI6ICJicmljazJ4Ii"
-              "wgInByb2JhYmlsaXR5IjogMH1d W3siY2x"
-              "hc3MiOiAicGxhdGUxeCIsICJwcm9iYWJpbGl0eSI6IDF9LCB7ImNsYXNzIjogImJyaWNrMXgiLCAicHJvYmF"
-              "iaWxpdHkiOiAwfSwgeyJjbGFzcyI6ICJicmljazJ4IiwgInByb2JhYmlsaXR5IjogMH1d"
+                    "W3siY2xhc3MiOiAicGxhdGUxeCIsICJwcm9iYWJpbGl0eSI6IDF9LCB7ImNsYXNzIjogImJyaWNrMXgiLCAi"
+                    "cHJvYmFiaWxpdHkiOiAwfSwgeyJjbGFzcyI6ICJicmljazJ4Ii"
+                    "wgInByb2JhYmlsaXR5IjogMH1d W3siY2x"
+                    "hc3MiOiAicGxhdGUxeCIsICJwcm9iYWJpbGl0eSI6IDF9LCB7ImNsYXNzIjogImJyaWNrMXgiLCAicHJvYmF"
+                    "iaWxpdHkiOiAwfSwgeyJjbGFzcyI6ICJicmljazJ4IiwgInByb2JhYmlsaXR5IjogMH1d"
                 )
                 s.broadcast(bytes(msg, "utf-8"))
 

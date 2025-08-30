@@ -142,7 +142,7 @@ class TcpClient:
                     )
                     raise e
                 else:
-                    logging.warning(
+                    logging.error(
                         "Client connection to '%s:%s' failed: %s. Retrying attempt %d ...",
                         self.host,
                         self.port,

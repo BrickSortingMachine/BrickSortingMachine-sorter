@@ -27,4 +27,5 @@ This document summarizes key lessons learned during development and testing to a
 * Always put the subscribe method into the on_connect method of a paho client. This ensures, that the subscription is re-done if the client was disconnected / is automatically reconnecting.
 
 ## 4. Static Code Checking
+
 Run black, isort and flake8 in the end and fix any issues.

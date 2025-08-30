@@ -35,5 +35,8 @@ pushover_credentials.json
 *.swp
 *.FCBak
 
+#logs
+logs/*
+
 # mkdocs
 site/

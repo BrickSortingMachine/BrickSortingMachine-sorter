@@ -1,0 +1,33 @@
+Screen {
+    layout: vertical;
+}
+
+#services {
+    height: 60%;
+    border: heavy white;
+}
+
+#messages {
+    height: 40%;
+    border: heavy white;
+}
+
+.green {
+    color: green;
+}
+
+.red {
+    color: red;
+}
+
+.blue {
+    color: blue;
+}
+
+.yellow {
+    color: yellow;
+}
+
+.gray {
+    color: #808080;
+}

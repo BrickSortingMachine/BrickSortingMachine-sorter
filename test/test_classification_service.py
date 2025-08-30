@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import pathlib
 import sys
 import threading
@@ -101,6 +102,7 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
 
         mqtt_client.on_connect = mqtt_on_connect
         mqtt_client.on_message = mqtt_on_message
+        mqtt_client.username_pw_set("sorter", os.environ.get("SESSION_SECRET"))
         mqtt_client.connect(self.broker_host, self.broker_port)
         mqtt_client.loop_start()
 
@@ -182,6 +184,7 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
         )
         subscriber.on_message = on_message
         subscriber.on_connect = on_client_connect
+        subscriber.username_pw_set("sorter", os.environ.get("SESSION_SECRET"))
 
         time.sleep(0.5)
         logging.info("Subscriber trying to connect ...")
@@ -235,6 +238,7 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
             client.subscribe("bricksortingmachine/classification/status", qos=1)
 
         retained_subscriber.on_connect = on_retained_subscriber_connect
+        retained_subscriber.username_pw_set("sorter", os.environ.get("SESSION_SECRET"))
         retained_subscriber.connect(self.broker_host, self.broker_port)
         retained_subscriber.loop_start()
         retained_subscriber.daemon = True
@@ -280,6 +284,7 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
             client.subscribe("bricksortingmachine/classification/status", qos=1)
 
         subscriber.on_connect = on_subscriber_connect
+        subscriber.username_pw_set("sorter", os.environ.get("SESSION_SECRET"))
         subscriber.connect(self.broker_host, self.broker_port)
         subscriber.loop_start()
         time.sleep(0.1)
@@ -346,6 +351,7 @@ class ClassificationServiceTest(test_mqtt_base.MqttTestCase, test_helpers.BaseTe
             client.subscribe("bricksortingmachine/classification/status", qos=1)
 
         subscriber.on_connect = on_subscriber_connect
+        subscriber.username_pw_set("sorter", os.environ.get("SESSION_SECRET"))
         subscriber.connect(self.broker_host, self.broker_port)
         subscriber.loop_start()
         time.sleep(0.1)

@@ -29,3 +29,7 @@ readchar
 black
 isort
 pre-commit
+mkdocs
+mkdocs-material
+textual
+passlib

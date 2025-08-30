@@ -23,3 +23,6 @@ coverage
 genbadge
 defusedxml
 pydantic
+mkdocs
+mkdocs-material
+passlib

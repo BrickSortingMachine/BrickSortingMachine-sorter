@@ -12,3 +12,8 @@ genbadge
 defusedxml
 pydantic
 grbl-streamer
+mkdocs
+mkdocs-material
+textual
+passlib
+

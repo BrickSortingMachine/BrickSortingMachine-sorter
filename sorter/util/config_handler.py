@@ -15,7 +15,7 @@ class ConfigHandler(metaclass=sorter.util.singleton.Singleton):
             )
 
         # read json
-        with open(self.json_file_path) as json_file:
+        with open(str(self.json_file_path)) as json_file:
             self.data = json.load(json_file)
 
     def get_param(self, key):

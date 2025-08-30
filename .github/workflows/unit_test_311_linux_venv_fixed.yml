@@ -39,6 +39,21 @@ jobs:
     - name: Copy config
       run: cp config.json.example config.json
 
+    - name: Build documentation with MkDocs
+      run: |
+        # Assumes your mkdocs.yml is at the root and its 'docs_dir' is set to 'doc'
+        mkdocs build --clean
+
+    - name: Upload documentation artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: documentation
+        path: site/
+
+    - name: Check code formatting with black
+      run: |
+        black --check .
+
     - name: Lint with flake8
       run: |
         # uses .flake8 config

@@ -1,0 +1,46 @@
+{
+  "services": [
+    {
+      "name": "Message Broker",
+      "command": "broker",
+      "enabled": true,
+      "args": {
+        "--port": "8884"
+      },
+      "restart_attempts": 3,
+      "depends_on": []
+    },
+    {
+      "name": "Vision-Service",
+      "command": "vision",
+      "enabled": true,
+      "args": {
+        "--host": "192.168.2.111",
+        "--collect_class": "None"
+      },
+      "restart_attempts": 1,
+      "depends_on": []
+    },
+    {
+      "name": "Classification-Service",
+      "command": "classification",
+      "enabled": true,
+      "args": {
+        "--host": "192.168.2.111",
+        "--model": "models/2024-08-04_12-44-43_multi-view_abandoned-space.keras"
+      },
+      "restart_attempts": 1,
+      "depends_on": []
+    },
+    {
+      "name": "Disabled-Notification-Service",
+      "command": "notification",
+      "enabled": true,
+      "restart_attempts": 1,
+      "args": {
+        "--host": "192.168.2.111",
+        "--theme": "robot"
+      }
+    }
+  ]
+}

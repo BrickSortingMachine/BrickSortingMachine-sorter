@@ -5,6 +5,7 @@ import threading
 import time
 
 import serial
+
 from sorter.util.config_handler import ConfigHandler
 
 

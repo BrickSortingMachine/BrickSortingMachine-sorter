@@ -264,9 +264,7 @@ if __name__ == "__main__":
     # asrs
     asrs_parser = subparsers.add_parser("asrs")
     asrs_parser.set_defaults(command="asrs")
-    asrs_parser.add_argument(
-        "--host", required=True, help="Hostname of machine server"
-    )
+    asrs_parser.add_argument("--host", required=True, help="Hostname of machine server")
     asrs_parser.add_argument(
         "--disable_network",
         required=False,

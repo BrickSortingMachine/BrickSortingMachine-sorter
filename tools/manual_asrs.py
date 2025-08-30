@@ -1,7 +1,6 @@
 import logging
 import os
 import sys
-import time
 
 import readchar
 
@@ -44,10 +43,10 @@ while True:
 
     if k == "a":
         asrs.run_job()
-    
+
     if k == "h":
         asrs.homing()
-    
+
     elif k == "p":
         asrs.goto()
 

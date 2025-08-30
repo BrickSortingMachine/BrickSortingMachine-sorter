@@ -1,13 +1,10 @@
 import logging
-import sys
+import threading
+import time
 
-import sorter.network.tcp_client
 from grbl_streamer import GrblStreamer
 
-import time
-import threading
-
-
+import sorter.network.tcp_client
 
 event_grbl_rx_buffer_percent_zero = threading.Event()
 
@@ -17,18 +14,20 @@ wait_event = threading.Event()
 
 
 def wait_prepare(event_str, data_0=None):
-    global wait_event
     global wait_event_str
     global wait_data_0
     wait_event.clear()
     wait_event_str = event_str
     wait_data_0 = data_0
 
+
 def wait(timeout=5):
     if not wait_event.is_set():
         result = wait_event.wait(timeout)
         if not result:
-            raise Exception(f"Timeout waiting for result message: wait_event_str{wait_event_str}")
+            raise Exception(
+                f"Timeout waiting for result message: wait_event_str{wait_event_str}"
+            )
 
 
 def grbl_callback(eventstring, *data):
@@ -44,6 +43,7 @@ def grbl_callback(eventstring, *data):
     if eventstring == wait_event_str:
         if wait_data_0 is None or data[0] == wait_data_0:
             wait_event.set()
+
 
 class ASRSTcpClient(sorter.network.tcp_client.TcpClient):
     def __init__(
@@ -77,7 +77,9 @@ class ASRSTcpClient(sorter.network.tcp_client.TcpClient):
 
 class ASRSService:
     def __init__(
-        self, host: str, disable_network,
+        self,
+        host: str,
+        disable_network,
     ) -> None:
 
         # network thread
@@ -106,7 +108,7 @@ class ASRSService:
         # wait connection to complete before start polling
         time.sleep(2)
         self.grbl.poll_start()
-    
+
     def stop(self):
         self.grbl.disconnect()
         if self.tcp_client is not None:
@@ -132,12 +134,12 @@ class ASRSService:
 
         for msg in ["G21", "G90", "G92X0Y0Z0", "G17"]:
             logging.info(f"Sending {msg} ...")
-            wait_prepare("on_write", msg+"\n")
+            wait_prepare("on_write", msg + "\n")
             self.grbl.send_immediately(msg)
             logging.info("waiting ...")
             wait()
             logging.info("completed ...")
-    
+
     def goto(self):
         logging.info("Starting motion ...")
         wait_prepare("on_standstill", None)

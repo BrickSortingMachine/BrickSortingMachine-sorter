@@ -29,6 +29,7 @@ class Service:
     has_warned: bool = False
     # To store the final uptime when a process stops
     final_uptime_seconds: Optional[int] = None
+    config_hash: str = ""
 
     def __post_init__(self):
         """Initializes remaining_restarts after the object is created."""

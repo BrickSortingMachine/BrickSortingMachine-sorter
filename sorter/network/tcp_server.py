@@ -16,6 +16,7 @@ class TcpServer:
         self.server_socket = None
         self.server_thread = None
         self.handler_list = []
+        self.server_ready = threading.Event()
 
     def start(self):
         socketserver.ThreadingMixIn.daemon_threads = True
@@ -27,14 +28,17 @@ class TcpServer:
         self.server_thread.daemon = True
         self.server_thread.start()
         self.server_thread.name = "TCPServingThread"
+        self.server_ready.wait()  # Wait until the server is ready
 
     def stop(self):
         logging.info("Server: Stop requested")
         for handler in self.handler_list:
             handler.request_stop()
-        self.server_socket.shutdown()
-        self.server_socket.server_close()
-        self.server_thread.join()
+        if self.server_socket:
+            self.server_socket.shutdown()
+            self.server_socket.server_close()
+        if self.server_thread:
+            self.server_thread.join()
 
     def broadcast(self, message):
         for handler in self.handler_list:
@@ -84,14 +88,20 @@ class TcpServer:
 
     def server_fct(self):
         # create server inside deamon thread so that deamon status is inherited by connection threads
-        self.server_socket = socketserver.ThreadingTCPServer(
-            (self.host, self.port), self.server_command_handler_class
-        )
-        # Not clean but only way found to communicate self (TcpServer) to the RequestHandlers
-        self.server_socket.tcp_server = self
-        logging.info("Server: Thread running")
-        self.server_socket.serve_forever(poll_interval=1)
-        logging.info("Server: Thread stopped")
+        try:
+            self.server_socket = socketserver.ThreadingTCPServer(
+                (self.host, self.port), self.server_command_handler_class
+            )
+            # Not clean but only way found to communicate self (TcpServer) to the RequestHandlers
+            self.server_socket.tcp_server = self
+            logging.info("Server: Thread running")
+            self.server_ready.set()
+            self.server_socket.serve_forever(poll_interval=1)
+        except Exception as e:
+            logging.error(f"Server: Thread ended with exception: {e}")
+            self.server_ready.set()  # Also signal if there's an error
+        finally:
+            logging.info("Server: Thread stopped")
 
     def get_handler_list(self):
         return self.handler_list
@@ -126,36 +136,34 @@ class RequestHandler(socketserver.BaseRequestHandler):
         self.event_client_connected()
         self.stop_requested = False
         self.stopped = False
+        logging.info(f"Handler for {self.name} started.")
 
-        while True:
-            # timeout receive frequently to detect server to be closed
-            self.request.settimeout(1)
-            client_disconnected = False
-            while True:
-                try:
-                    self.data = self.request.recv(1024)
-                    if len(self.data) == 0:
-                        client_disconnected = True
+        while not self.stop_requested:
+            logging.debug(f"Handler for {self.name} loop, stop_requested={self.stop_requested}")
+            try:
+                # timeout receive frequently to detect server to be closed
+                self.request.settimeout(1)
+                self.data = self.request.recv(1024)
+                if not self.data:
+                    self.tcp_server.client_disconnected(self)
+                    self.event_client_disconnected()
                     break
-                except socket.timeout:
-                    if self.stop_requested:
-                        # break inner loop, on stop
-                        break
-                except ConnectionResetError:
-                    # client disconnected unexpectedly
-                    client_disconnected = True
-                    break
-            # empty string means connection closed
-            if client_disconnected:
+            except socket.timeout:
+                continue  # Just continue the loop on timeout
+            except ConnectionResetError:
                 self.tcp_server.client_disconnected(self)
                 self.event_client_disconnected()
                 break
-            if self.stop_requested:
-                # break outer loop, on stop
+            except Exception as e:
+                logging.error(f"Unexpected error in RequestHandler: {e}")
+                self.tcp_server.client_disconnected(self)
+                self.event_client_disconnected()
                 break
 
             # check message is complete, i.e. last byte is newline
-            assert self.data[-1] == b"\n"[0]
+            if not self.data.endswith(b"\n"):
+                logging.warning("Incomplete message received, discarding.")
+                continue
             self.data = self.data.strip()
 
             # break multiple messages received together

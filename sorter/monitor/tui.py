@@ -4,6 +4,7 @@ from rich.text import Text
 from textual.app import App, ComposeResult
 from textual.reactive import reactive
 from textual.widgets import DataTable, Footer, Header, RichLog
+from textual.widgets.data_table import CursorType
 
 from sorter.util.time_delta_format import time_delta_format
 
@@ -13,7 +14,10 @@ class BrickSortingMachine(App):
 
     CSS_PATH = "tui.css"
     BINDINGS = [
-        ("r", "restart_all", "Restart All"),
+        ("c", "reload_config", "Reload Config"),
+        ("s", "stop_all", "Stop All"),
+        ("r", "restart_selected", "Restart Selected"),
+        ("a", "restart_all", "Restart All"),
         ("q", "quit", "Quit"),
     ]
 
@@ -34,6 +38,7 @@ class BrickSortingMachine(App):
     def on_mount(self) -> None:
         """Called when the app is mounted."""
         table = self.query_one(DataTable)
+        table.cursor_type = "row"
         table.add_columns("Service", "PID", "Status", "Uptime", "Restarts")
         self.update_timer = self.set_interval(1, self.update_data)
 
@@ -79,11 +84,29 @@ class BrickSortingMachine(App):
             "RUNNING": "green",
             "ERROR": "red",
             "STOPPED": "gray",
+            "PAUSED": "gray",
             "WARN": "yellow",
             "WAITING": "blue",
             "STARTING": "blue",
             "RESTARTING": "blue",
         }.get(status, "white")
+
+    def action_reload_config(self) -> None:
+        """An action to reload the configuration file."""
+        self.monitor.reload_config()
+
+    def action_stop_all(self) -> None:
+        """An action to stop all services."""
+        self.monitor.stop_all_services(paused=True)
+
+    def action_restart_selected(self) -> None:
+        """An action to restart the selected service."""
+        table = self.query_one(DataTable)
+        if table.cursor_row >= 0:
+            service_name = table.get_row_at(table.cursor_row)[0]
+            if isinstance(service_name, Text):
+                service_name = service_name.plain
+            self.monitor.restart_service(service_name)
 
     def action_restart_all(self) -> None:
         """An action to restart all services."""

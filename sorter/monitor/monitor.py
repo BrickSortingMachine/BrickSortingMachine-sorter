@@ -1,3 +1,4 @@
+import hashlib
 import json
 import logging
 import pathlib
@@ -25,31 +26,23 @@ class Monitor:
         self._stop_event = threading.Event()
         self.messages: List[str] = []
         self.message_lock = threading.Lock()
-        self._load_config()
+        self.services = self._load_config(self.config_path)
 
-    def _load_config(self):
-        """Loads the service configuration from the JSON file."""
-        logging.info(f"Loading configuration from: {self.config_path}")
+    def _load_config(self, path: pathlib.Path) -> List[Service]:
+        """Loads services from a given config file path."""
+        logging.info(f"Loading configuration from: {path}")
         try:
-            with open(self.config_path, "r") as f:
+            with open(path, "r") as f:
                 config_data = json.load(f)
-        except FileNotFoundError:
-            logging.error(f"Configuration file not found at: {self.config_path}")
-            raise
-        except json.JSONDecodeError:
-            logging.error(f"Invalid JSON in configuration file: {self.config_path}")
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            logging.error(f"Error loading configuration from {path}: {e}")
             raise
 
+        loaded_services = []
         service_list = config_data.get("services", [])
-        if not service_list:
-            logging.warning("No services found in the configuration file.")
-            return
 
         for service_data in service_list:
             if not service_data.get("enabled", False):
-                logging.info(
-                    f"Service '{service_data.get('name')}' is disabled. Skipping."
-                )
                 continue
 
             required_keys = ["name", "command", "args"]
@@ -57,6 +50,9 @@ class Monitor:
                 raise ValueError(
                     f"Service config missing required keys in: {service_data}"
                 )
+
+            config_string = json.dumps(service_data, sort_keys=True)
+            config_hash = hashlib.sha256(config_string.encode()).hexdigest()
 
             service = Service(
                 name=service_data["name"],
@@ -66,9 +62,60 @@ class Monitor:
                 restart_attempts=service_data.get("restart_attempts", 0),
                 depends_on=service_data.get("depends_on", []),
                 startup_delay_seconds=service_data.get("startup_delay_seconds", 0),
+                config_hash=config_hash,
             )
+            loaded_services.append(service)
+        return loaded_services
+
+    def reload_config(self):
+        """Reloads the config, compares, and updates services."""
+        logging.info(f"Reloading configuration from {self.config_path}")
+        self.add_message("Reloading configuration...", "Monitor")
+
+        new_services_list = self._load_config(self.config_path)
+        current_services_map = {s.name: s for s in self.services}
+        new_services_map = {s.name: s for s in new_services_list}
+
+        # --- Identify changes ---
+        removed_services = [
+            s for name, s in current_services_map.items() if name not in new_services_map
+        ]
+        added_services = [
+            s for name, s in new_services_map.items() if name not in current_services_map
+        ]
+        potentially_modified_services = [
+            s
+            for name, s in new_services_map.items()
+            if name in current_services_map
+        ]
+
+        # Stop and remove services that are no longer in the config
+        for service in removed_services:
+            logging.info(f"Service '{service.name}' removed from config. Stopping.")
+            self.add_message(f"Stopping removed service: {service.name}", "Monitor")
+            self.process_manager.stop_service(service)
+            self.services.remove(service)
+
+        # Add new services
+        for service in added_services:
+            logging.info(f"New service '{service.name}' added to config.")
+            self.add_message(f"Adding new service: {service.name}", "Monitor")
             self.services.append(service)
-            logging.info(f"Loaded service: {service.name}")
+
+        # Stop and update services that have changed
+        for new_service in potentially_modified_services:
+            current_service = current_services_map[new_service.name]
+            if new_service.config_hash != current_service.config_hash:
+                logging.info(
+                    f"Service '{new_service.name}' config changed. Restarting."
+                )
+                self.add_message(
+                    f"Restarting modified service: {new_service.name}", "Monitor"
+                )
+                self.process_manager.stop_service(current_service)
+                # Replace the old service object with the new one
+                self.services.remove(current_service)
+                self.services.append(new_service)
 
     def get_services(self) -> List[Service]:
         return self.services
@@ -95,13 +142,47 @@ class Monitor:
             logging.info("Shutdown initiated by user.")
             self._stop_event.set()
 
-    def restart_all_services(self):
-        logging.info("Restarting all services...")
+    def stop_all_services(self, paused: bool = False):
+        """Stops all services. If paused is True, sets status to PAUSED."""
+        status = "PAUSED" if paused else "STOPPED"
+        logging.info(f"Setting all services to {status}")
+        self.add_message(f"Stopping all services (State: {status})", "Monitor")
         self.process_manager.stop_all(self.services)
         for service in self.services:
+            service.status = status
+            service.final_uptime_seconds = None
+            service.start_time = None
+
+    def restart_all_services(self):
+        logging.info("Restarting all services...")
+        self.add_message("Restarting all services...", "Monitor")
+        self.stop_all_services(paused=False)
+
+    def restart_service(self, service_name: str):
+        """Restarts a single service by name."""
+        service = next((s for s in self.services if s.name == service_name), None)
+        if service:
+            logging.info(f"Restarting service '{service_name}'...")
+            self.add_message(f"Restarting service: {service_name}", "Monitor")
+            self.process_manager.stop_service(service)
             service.status = "STOPPED"
             service.final_uptime_seconds = None
             service.start_time = None
+        else:
+            logging.warning(f"Attempted to restart unknown service: {service_name}")
+
+    def set_service_to_error(self, service_name: str, message: str):
+        """Sets a service's status to ERROR, triggered by log monitoring."""
+        service = next((s for s in self.services if s.name == service_name), None)
+        if service and service.status not in ["ERROR", "STOPPED", "PAUSED"]:
+            logging.error(
+                f"LogMonitor detected an error for '{service_name}': {message}"
+            )
+            self.add_message(f"ERROR: {message}", service.name)
+            service.status = "ERROR"
+            # If the process is still running, we should stop it.
+            if service.process and service.process.poll() is None:
+                self.process_manager.stop_service(service)
 
     def _are_dependencies_met(self, service_to_check: Service) -> bool:
         """Checks if all dependencies for a given service are in the RUNNING state."""
@@ -123,6 +204,9 @@ class Monitor:
 
     def _update_service_status(self, service: Service):
         """Runs a single iteration of the state machine for a given service."""
+        if service.status == "PAUSED":
+            return  # Do nothing if the service is paused by the user
+
         process_exit_code = service.process.poll() if service.process else None
 
         # --- Service State Machine ---

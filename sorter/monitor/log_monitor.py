@@ -61,11 +61,14 @@ class LogMonitor:
                         continue
 
                     line = line.strip()
-                    if "ERROR" in line:
-                        self.monitor.add_message(line, service.name)
-                    elif "WARN" in line:
-                        self.monitor.add_message(line, service.name)
-                        service.has_warned = True  # Set flag for TUI color
+                    if "ERROR" in line.upper():
+                        # This will trigger the service to go into the ERROR state
+                        # and be handled by the main control loop.
+                        self.monitor.set_service_to_error(service.name, line)
+                        break  # Exit the tailing loop for this service
+                    elif "WARN" in line.upper():
+                        self.monitor.add_message(f"WARN: {line}", service.name)
+                        service.has_warned = True
         except Exception as e:
             logging.error(
                 f"Error while monitoring log for '{service.name}': {e}", exc_info=False

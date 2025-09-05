@@ -92,7 +92,11 @@ class Classifier:
 
         # class, prob, uniqueness
         # predicted_class = np.argmax(probability,1)
-        probability_list = probability.tolist()[0]
+
+        # this used to be
+        # probability_list = probability.tolist()[0]
+        # TODO: now it is only working with the following - interface seems to have changed - to be varified
+        probability_list = probability.tolist()
         class_list = self.class_list
         pred_list = list(
             map(

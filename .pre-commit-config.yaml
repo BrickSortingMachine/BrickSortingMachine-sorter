@@ -1,16 +1,18 @@
 repos:
 -   repo: https://github.com/psf/black
-    rev: stable
+    rev: 25.1.0
     hooks:
-    - id: black
-      language_version: python3.11
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v1.2.3
+    -   id: black
+-   repo: https://github.com/PyCQA/flake8
+    rev: 7.3.0
     hooks:
-    - id: flake8
-# conda version of isort (std uses poetry)
-- repo: https://github.com/Quantco/pre-commit-mirrors-isort
-  rev: ''  # Use the sha / tag you want to point at
-  hooks:
-    - id: isort-conda
-      args: ["--profile", "black"]
+    -   id: flake8
+-   repo: https://github.com/pycqa/isort
+    rev: 6.0.1
+    hooks:
+      - id: isort
+        args: ["--profile", "black"]
+-   repo: https://github.com/PyCQA/autoflake
+    rev: v2.3.1
+    hooks:
+    -   id: autoflake

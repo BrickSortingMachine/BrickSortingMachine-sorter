@@ -49,8 +49,8 @@ if __name__ == "__main__":
     # )
     print(K)
     K_new = K.copy()
-    K_new[0, 0] *= 0.8
-    K_new[1, 1] *= 0.8
+    K_new[0, 0] *= 0.7
+    K_new[1, 1] *= 0.7
 
     print(K_new)
 
@@ -59,7 +59,7 @@ if __name__ == "__main__":
         undistorted_image = cv2.undistort(img, K, dist_param, None, K_new)
     elif model == "fisheye":
         map1, map2 = cv2.fisheye.initUndistortRectifyMap(
-            K, dist_param, np.eye(3), K, img.shape[:2], cv2.CV_16SC2
+            K, dist_param, np.eye(3), K_new, (img.shape[1], img.shape[0]), cv2.CV_16SC2
         )
         undistorted_image = cv2.remap(
             img,

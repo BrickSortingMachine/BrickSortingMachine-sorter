@@ -26,9 +26,10 @@ import sorter.vision_service.camera_capture
 def read_camera_parameters(json_filepath):
     with open(json_filepath, "r") as f:
         data = json.load(f)
+    model = data["model"]
     mtx = np.array(data["mtx"])
     dist = np.array(data["dist"])
-    return mtx, dist
+    return model, mtx, dist
 
 
 if __name__ == "__main__":

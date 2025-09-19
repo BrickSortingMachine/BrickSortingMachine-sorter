@@ -132,6 +132,7 @@ if __name__ == "__main__":
 
     # save calibration result
     calibration_data = {
+        "model": "fisheye",
         "mtx": K.tolist(),
         "dist": D.tolist(),
         "rvecs": [rvec.tolist() for rvec in rvecs],

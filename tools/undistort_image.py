@@ -30,11 +30,6 @@ if __name__ == "__main__":
     parser.add_argument("--vis", action="store_true")
     args = parser.parse_args()
 
-    calibration_fp = (
-        pathlib.Path(__file__).parents[1]
-        / "calibration"
-        / "calibration_2025-09-18_22-27_fisheye.json"
-    )
     img_fp = pathlib.Path(args.file)
 
     # read image
@@ -44,6 +39,11 @@ if __name__ == "__main__":
     height, width = img.shape[:2]
 
     # read the calibration parameters again with method read_camera_parameters for test
+    calibration_fp = (
+        pathlib.Path(__file__).parents[1]
+        / "calibration"
+        / "calibration_2025-09-18_22-27_fisheye.json"
+    )
     model, K, dist_param = read_camera_parameters(calibration_fp)
 
     if not args.distort:

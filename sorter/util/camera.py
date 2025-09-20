@@ -1,10 +1,55 @@
-import logging
-
 import cv2
 import numpy as np
 
+scale_factor = 0.7
 
-def distort_image(img, model, K, dist_param):
+
+def undistort_image(
+    img: np.ndarray, model: str, K: np.ndarray, dist_param: np.ndarray
+) -> np.ndarray:
+    """
+    Undistorts an image given camera parameters.
+    Args:
+        img (numpy.ndarray): The input image.
+        model (str): The camera model ("pinhole" or "fisheye").
+        K (numpy.ndarray): The camera matrix (intrinsic parameters).
+        dist_param (numpy.ndarray): The distortion coefficients.
+    Returns:
+        numpy.ndarray: The undistorted image.
+    """
+    K_new = K.copy()
+    K_new[0, 0] *= scale_factor
+    K_new[1, 1] *= scale_factor
+
+    if model == "pinhole":
+        undistorted_image = cv2.undistort(img, K, dist_param, None, K_new)
+
+    elif model == "fisheye":
+        map1, map2 = cv2.fisheye.initUndistortRectifyMap(
+            K,
+            dist_param,
+            np.eye(3),
+            K_new,
+            (img.shape[1], img.shape[0]),
+            cv2.CV_16SC2,
+        )
+        undistorted_image = cv2.remap(
+            img,
+            map1,
+            map2,
+            interpolation=cv2.INTER_LINEAR,
+            borderMode=cv2.BORDER_CONSTANT,
+        )
+
+    else:
+        raise Exception(f"Unknown model type {model}")
+
+    return undistorted_image
+
+
+def distort_image(
+    img: np.ndarray, model: str, K: np.ndarray, dist_param: np.ndarray
+) -> np.ndarray:
     """
     Distorts an image given camera parameters.
     Args:
@@ -16,8 +61,6 @@ def distort_image(img, model, K, dist_param):
         numpy.ndarray: The distorted image.
     """
     height, width = img.shape[:2]
-    logging.info("Performing distortion...")
-    # This block takes a previously undistorted image and applies distortion to it.
 
     # K_of_distorted_output: The camera matrix of the final, distorted image.
     # This is the original camera matrix from the calibration file.
@@ -26,12 +69,8 @@ def distort_image(img, model, K, dist_param):
     # K_of_undistorted_input: The camera matrix corresponding to the input 'img'.
     # We assume it was generated using the same scaling factor as in the undistortion step.
     K_of_undistorted_input = K.copy()
-    scale_factor = 0.7  # MUST match the factor used to create the undistorted image
     K_of_undistorted_input[0, 0] *= scale_factor
     K_of_undistorted_input[1, 1] *= scale_factor
-
-    logging.info(f"Source (undistorted) camera matrix:\n{K_of_undistorted_input}")
-    logging.info(f"Target (distorted) camera matrix:\n{K_of_distorted_output}")
 
     # To distort the image, we create a map from the output (distorted) image
     # coordinates back to the source (undistorted) image coordinates.
@@ -60,6 +99,7 @@ def distort_image(img, model, K, dist_param):
             dist_param,
             P=K_of_undistorted_input,
         )
+
     elif model == "fisheye":
         undistorted_pixel_coords = cv2.fisheye.undistortPoints(
             distorted_pixel_coords,
@@ -67,6 +107,7 @@ def distort_image(img, model, K, dist_param):
             dist_param,
             P=K_of_undistorted_input,
         )
+
     else:
         raise Exception(f"Unknown model type {model}")
 

@@ -4,7 +4,6 @@ import pathlib
 import sys
 
 import cv2
-import numpy as np
 
 logging.basicConfig(
     format="%(levelname)s %(asctime)s %(filename)s:%(lineno)d %(message)s",
@@ -46,63 +45,26 @@ if __name__ == "__main__":
 
     # read the calibration parameters again with method read_camera_parameters for test
     model, K, dist_param = read_camera_parameters(calibration_fp)
-    logging.info(f"Read camera matrix:\n{K}")
-    logging.info(f"Read distortion coefficients:\n{dist_param}")
 
     if not args.distort:
-        # undistort
-        print(K)
-        K_new = K.copy()
-        K_new[0, 0] *= 0.7
-        K_new[1, 1] *= 0.7
-
-        print(K_new)
-
-        # undistort
-        if model == "pinhole":
-            undistorted_image = cv2.undistort(img, K, dist_param, None, K_new)
-        elif model == "fisheye":
-            map1, map2 = cv2.fisheye.initUndistortRectifyMap(
-                K,
-                dist_param,
-                np.eye(3),
-                K_new,
-                (img.shape[1], img.shape[0]),
-                cv2.CV_16SC2,
-            )
-            undistorted_image = cv2.remap(
-                img,
-                map1,
-                map2,
-                interpolation=cv2.INTER_LINEAR,
-                borderMode=cv2.BORDER_CONSTANT,
-            )
-        else:
-            logging.error(f"Unknown model type {model}")
-            sys.exit(1)
-
-        # write
-        undist_fp = img_fp.parent / (img_fp.stem + "_undist" + img_fp.suffix)
-        cv2.imwrite(str(undist_fp), undistorted_image)
-        logging.info(f"Wrote undistorted img to {undist_fp}")
-
-        # show
-        cv2.imshow("Original Image", img)
-        cv2.imshow("Undistorted Image", undistorted_image)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        output_image = sorter.util.camera.undistort_image(img, model, K, dist_param)
+        suffix = "_undistorted"
 
     elif args.distort:
-        distorted_image = sorter.util.camera.distort_image(img, model, K, dist_param)
+        output_image = sorter.util.camera.distort_image(img, model, K, dist_param)
+        suffix = "_distorted"
 
-        # write
-        dist_fp = img_fp.parent / (img_fp.stem + "_redistorted" + img_fp.suffix)
-        cv2.imwrite(str(dist_fp), distorted_image)
-        logging.info(f"Wrote re-distorted image to {dist_fp}")
+    # write
+    dist_fp = img_fp.parent / (img_fp.stem + suffix + img_fp.suffix)
+    if dist_fp.exists():
+        logging.error(f"File {dist_fp} already exists")
+        sys.exit(1)
 
-        # show
-        if args.vis:
-            cv2.imshow("Original Undistorted Image", img)
-            cv2.imshow("Re-distorted Image", distorted_image)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
+    cv2.imwrite(str(dist_fp), output_image)
+    logging.info(f"Wrote re-distorted image to {dist_fp}")
+
+    if args.vis:
+        cv2.imshow("Original Image", img)
+        cv2.imshow("Output Image", output_image)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()

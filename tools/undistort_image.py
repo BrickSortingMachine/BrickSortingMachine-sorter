@@ -17,6 +17,7 @@ p = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(p)
 
 import sorter.util.argument_parser
+import sorter.util.camera
 from tools.camera_calibration_process import read_camera_parameters
 
 if __name__ == "__main__":
@@ -26,12 +27,15 @@ if __name__ == "__main__":
     )
     # argument for folder to read
     parser.add_argument("--file", required=True)
-    parser.add_argument("--calib", required=True)
     parser.add_argument("--distort", action="store_true")
-
+    parser.add_argument("--vis", action="store_true")
     args = parser.parse_args()
 
-    calibration_fp = pathlib.Path(args.calib)
+    calibration_fp = (
+        pathlib.Path(__file__).parents[1]
+        / "calibration"
+        / "calibration_2025-09-18_22-27_fisheye.json"
+    )
     img_fp = pathlib.Path(args.file)
 
     # read image
@@ -89,78 +93,7 @@ if __name__ == "__main__":
         cv2.destroyAllWindows()
 
     elif args.distort:
-        # -------------------
-        # DISTORTION
-        # -------------------
-        logging.info("Performing distortion...")
-        # This block takes a previously undistorted image and applies distortion to it.
-
-        # K_of_distorted_output: The camera matrix of the final, distorted image.
-        # This is the original camera matrix from the calibration file.
-        K_of_distorted_output = K
-
-        # K_of_undistorted_input: The camera matrix corresponding to the input 'img'.
-        # We assume it was generated using the same scaling factor as in the undistortion step.
-        K_of_undistorted_input = K.copy()
-        scale_factor = 0.7  # MUST match the factor used to create the undistorted image
-        K_of_undistorted_input[0, 0] *= scale_factor
-        K_of_undistorted_input[1, 1] *= scale_factor
-
-        logging.info(f"Source (undistorted) camera matrix:\n{K_of_undistorted_input}")
-        logging.info(f"Target (distorted) camera matrix:\n{K_of_distorted_output}")
-
-        # To distort the image, we create a map from the output (distorted) image
-        # coordinates back to the source (undistorted) image coordinates.
-
-        # 1. Create a grid of (x, y) coordinates for every pixel in the target distorted image.
-        distorted_coords_x, distorted_coords_y = np.meshgrid(
-            np.arange(width), np.arange(height)
-        )
-
-        # 2. Format the grid into a (N, 1, 2) array for OpenCV functions.
-        distorted_pixel_coords = (
-            np.stack([distorted_coords_x, distorted_coords_y], axis=-1)
-            .reshape(-1, 1, 2)
-            .astype(np.float32)
-        )
-
-        # 3. Use `undistortPoints` to find where each distorted pixel would be located in
-        #    the source (undistorted) image's coordinate system. The 'P' argument
-        #    directly projects the points into pixel coordinates for the camera
-        #    defined by K_of_undistorted_input.
-        if model == "pinhole":
-            # The original code had an incorrect placeholder for this.
-            undistorted_pixel_coords = cv2.undistortPoints(
-                distorted_pixel_coords,
-                K_of_distorted_output,
-                dist_param,
-                P=K_of_undistorted_input,
-            )
-        elif model == "fisheye":
-            undistorted_pixel_coords = cv2.fisheye.undistortPoints(
-                distorted_pixel_coords,
-                K_of_distorted_output,
-                dist_param,
-                P=K_of_undistorted_input,
-            )
-        else:
-            logging.error(f"Unknown model type {model}")
-            sys.exit(1)
-
-        # 4. The output is a list of coordinates. Reshape it into two maps (one for x,
-        #    one for y) that cv2.remap can use.
-        undistorted_pixel_coords = undistorted_pixel_coords.squeeze()
-        map1 = undistorted_pixel_coords[:, 0].reshape(height, width).astype(np.float32)
-        map2 = undistorted_pixel_coords[:, 1].reshape(height, width).astype(np.float32)
-
-        # 5. Apply the mapping to the source image to get the final distorted image.
-        distorted_image = cv2.remap(
-            img,
-            map1,
-            map2,
-            interpolation=cv2.INTER_LINEAR,
-            borderMode=cv2.BORDER_CONSTANT,
-        )
+        distorted_image = sorter.util.camera.distort_image(img, model, K, dist_param)
 
         # write
         dist_fp = img_fp.parent / (img_fp.stem + "_redistorted" + img_fp.suffix)
@@ -168,7 +101,8 @@ if __name__ == "__main__":
         logging.info(f"Wrote re-distorted image to {dist_fp}")
 
         # show
-        cv2.imshow("Original Undistorted Image", img)
-        cv2.imshow("Re-distorted Image", distorted_image)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        if args.vis:
+            cv2.imshow("Original Undistorted Image", img)
+            cv2.imshow("Re-distorted Image", distorted_image)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()

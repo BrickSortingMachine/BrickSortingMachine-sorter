@@ -179,7 +179,7 @@ class VisionServiceTest(test_helpers.BaseTest):
         # yellow technic brick
         recording = os.path.abspath(
             os.path.join(
-                os.path.dirname(__file__), "..", "data", "rec_2022-04-21_12-42-30"
+                os.path.dirname(__file__), "..", "data", "rec_2025-08-30_23-10-23"
             )
         )
 
@@ -271,12 +271,12 @@ class VisionServiceTest(test_helpers.BaseTest):
         # yellow technic brick
         recording = os.path.abspath(
             os.path.join(
-                os.path.dirname(__file__), "..", "data", "rec_2022-04-21_12-42-30"
+                os.path.dirname(__file__), "..", "data", "rec_2025-08-30_23-10-23"
             )
         )
 
         # catch exceptions in other threads
-        sorter.third_party.catch_all_thread_exception.install()
+        sorter.util.catch_all_thread_exception.install()
 
         # dummy server
         s = sorter.network.tcp_server.TcpServer("0.0.0.0", 5005, DummyCommandHandler)
@@ -315,7 +315,7 @@ class VisionServiceTest(test_helpers.BaseTest):
         s.stop()
         time.sleep(2)
 
-        sorter.third_party.catch_all_thread_exception.collect_thread_exceptions()
+        sorter.util.catch_all_thread_exception.collect_thread_exceptions()
 
         test_helpers.BaseTest.assert_threads_stopped(self)
 
@@ -325,7 +325,7 @@ class VisionServiceTest(test_helpers.BaseTest):
         # recording not actually needed
         recording = os.path.abspath(
             os.path.join(
-                os.path.dirname(__file__), "..", "data", "rec_2022-04-21_12-42-30"
+                os.path.dirname(__file__), "..", "data", "rec_2025-08-30_23-10-23"
             )
         )
 
@@ -392,7 +392,7 @@ class VisionServiceTest(test_helpers.BaseTest):
         # recording not actually needed
         recording = os.path.abspath(
             os.path.join(
-                os.path.dirname(__file__), "..", "data", "rec_2022-04-21_12-42-30"
+                os.path.dirname(__file__), "..", "data", "rec_2025-08-30_23-10-23"
             )
         )
 

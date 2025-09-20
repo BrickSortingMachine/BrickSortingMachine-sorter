@@ -16,4 +16,3 @@ mkdocs
 mkdocs-material
 textual
 passlib
-

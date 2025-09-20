@@ -19,18 +19,7 @@ p = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(p)
 
 import sorter.util.argument_parser
-import sorter.vision_service.camera_capture
-
-
-# define method for reading the saved camera parameters from json file
-def read_camera_parameters(json_filepath):
-    with open(json_filepath, "r") as f:
-        data = json.load(f)
-    model = data["model"]
-    mtx = np.array(data["mtx"])
-    dist = np.array(data["dist"])
-    return model, mtx, dist
-
+from sorter.util.camera import read_camera_parameters
 
 if __name__ == "__main__":
     # parse command line arguments

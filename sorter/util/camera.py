@@ -1,7 +1,27 @@
+import json
+from typing import Tuple
+
 import cv2
 import numpy as np
 
 scale_factor = 0.7
+
+
+def read_camera_parameters(json_filepath: str) -> Tuple:
+    """
+    Reads camera parameters from a JSON file.
+    Args:
+        json_filepath (str): The path to the JSON file.
+    Returns:
+        Tuple[str, np.ndarray, np.ndarray]: A tuple containing the camera model name,
+            camera matrix (mtx), and distortion coefficients (dist).
+    """
+    with open(json_filepath, "r") as f:
+        data = json.load(f)
+    model = data["model"]
+    mtx = np.array(data["mtx"])
+    dist = np.array(data["dist"])
+    return model, mtx, dist
 
 
 def undistort_image(

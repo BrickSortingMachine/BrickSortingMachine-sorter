@@ -3,7 +3,6 @@ import logging
 import pathlib
 
 import cv2
-import tensorflow as tf
 
 import sorter.classification_service.classification_result
 import sorter.classification_service.crop_image
@@ -11,11 +10,16 @@ import sorter.classification_service.white_balance
 import sorter.util.file_hash
 
 
+class InvalidImageError(Exception):
+    pass
+
+
 class Classifier:
     def __init__(self, model_fp):
+        import tensorflow as tf
+
         # softmax convert logits to probabilities
         # https://developers.google.com/machine-learning/glossary#logits
-
         # only .keras tested currently
         assert model_fp.suffix == ".keras"
 
@@ -51,6 +55,8 @@ class Classifier:
 
         # load
         ocv_img = cv2.imread(img_fp)
+        if ocv_img is None:
+            raise InvalidImageError("Invalid image file")
         # ocv_img = sorter.white_balance.white_balance(ocv_img, random_whitebalance=False)
         ocv_img = cv2.cvtColor(ocv_img, cv2.COLOR_BGR2RGB)
 
@@ -79,6 +85,8 @@ class Classifier:
         )
 
     def predict_crop(self, img_crop_low, img_crop_high):
+        import tensorflow as tf
+
         # convert to tensor
         image_array_low = tf.convert_to_tensor(img_crop_low, dtype=tf.float32)
         image_array_high = tf.convert_to_tensor(img_crop_high, dtype=tf.float32)
@@ -92,11 +100,7 @@ class Classifier:
 
         # class, prob, uniqueness
         # predicted_class = np.argmax(probability,1)
-
-        # this used to be
-        # probability_list = probability.tolist()[0]
-        # TODO: now it is only working with the following - interface seems to have changed - to be varified
-        probability_list = probability.tolist()
+        probability_list = probability.tolist()[0]
         class_list = self.class_list
         pred_list = list(
             map(
